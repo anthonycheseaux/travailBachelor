@@ -1,0 +1,29 @@
+<div class="container-fluid text-center">
+  <div style="padding-top: 100px; padding-bottom: 50px">
+    <h1>
+      <span>Retrouvez votre commune</span>
+      <br>
+      <span>dans les Archives fédérales suisses</span>
+    </h1>
+  </div>
+  <div>
+    <form ng-submit="$event.preventDefault()" name="searchForm">
+
+      <md-input-container>
+        <input
+          mdInput placeholder="Commune"
+          [mdAutocomplete]="auto"
+          [formControl]="municipalitiesCtrl">
+      </md-input-container>
+
+      <md-autocomplete #auto="mdAutocomplete">
+        <md-option *ngFor="let municipalities of filteredMunicipalities | async" [value]="municipalities">
+          {{ municipalities }}
+        </md-option>
+      </md-autocomplete>
+
+      <button md-raised-button>Afficher</button>
+
+    </form>
+  </div>
+</div>
