@@ -1,4 +1,6 @@
 import { Component, OnInit } from '@angular/core';
+import {MunicipalitiesService} from "./municipalities.service";
+import {Municipality} from "./municipality";
 
 @Component({
   selector: 'app-municipalities',
@@ -7,9 +9,19 @@ import { Component, OnInit } from '@angular/core';
 })
 export class MunicipalitiesComponent implements OnInit {
 
-  constructor() { }
+  options: Municipality[] = [];
+  loading: boolean;
+
+  constructor(private municipalitiesService: MunicipalitiesService) {  }
 
   ngOnInit() {
+    this.loading = true;
+
+    this.municipalitiesService.getAllMunicipalities().subscribe(
+      (elements: any[]) => this.options = elements,
+      (error) => console.log(error),
+      () => this.loading = false
+    );
   }
 
 }

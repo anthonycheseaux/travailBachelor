@@ -13,17 +13,34 @@
         <input
           mdInput placeholder="Commune"
           [mdAutocomplete]="auto"
-          [formControl]="municipalitiesCtrl">
+          [formControl]="myControl"
+          size="60px">
       </md-input-container>
 
-      <md-autocomplete #auto="mdAutocomplete">
-        <md-option *ngFor="let municipalities of filteredMunicipalities | async" [value]="municipalities">
-          {{ municipalities }}
+      <md-autocomplete #auto="mdAutocomplete" [displayWith]="displayFn">
+        <md-option *ngFor="let option of filteredOptions | async" [value]="option">
+          {{ option.name }}
         </md-option>
       </md-autocomplete>
 
+      <!--<md-input-container>
+        <input
+          mdInput placeholder="Commune"
+          [formControl] = "myControl"
+          [mdAutocomplete] = "auto">
+      </md-input-container>
+
+      <md-autocomplete #auto="mdAutocomplete" [displayWith]="displayFn">
+        <md-option *ngFor="let option of filteredOptions | async" [value]="option">
+          {{ options.name }}
+        </md-option>
+      </md-autocomplete>-->
+
       <button md-raised-button>Afficher</button>
 
+      <div style="margin: 200px">
+
+      </div>
     </form>
   </div>
 </div>

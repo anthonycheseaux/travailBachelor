@@ -1,3 +1,35 @@
-<p>
-  municipalities works!
-</p>
+<div class="container-fluid text-left">
+  <div class="col-sm-4 text-center" style="background-color: #555555">
+    test
+  </div>
+
+  <div class="col-sm-8 text-center">
+  <h3 class="text-center">Liste des communes</h3>
+
+  <div class="center-block" *ngIf="loading">
+    <md-spinner style="margin:0 auto;" mode="indeterminate"></md-spinner>
+  </div>
+
+  <div *ngIf="!loading">
+    <table class="table table-striped">
+      <thead>
+      <tr>
+        <th>Nom de la commune</th>
+        <th>District</th>
+        <th>Canton</th>
+        <th></th>
+      </tr>
+      </thead>
+      <tbody>
+      <tr *ngFor="let options of options">
+        <td>{{options.name}}</td>
+        <td>{{options.district}}</td>
+        <td>{{options.canton}}</td>
+        <td><button md-raised-button>Voir les UD >></button></td>
+      </tr>
+      </tbody>
+    </table>
+  </div>
+</div>
+</div>
+
