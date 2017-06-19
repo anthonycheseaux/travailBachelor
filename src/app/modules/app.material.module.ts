@@ -1,17 +1,20 @@
 import {
   MdButtonModule,
-  MdCheckboxModule, MdInputContainer, MdInputModule, MdAutocompleteModule, MdListModule, MdTabsModule,
+  MdInputModule,
+  MdAutocompleteModule,
+  MdListModule,
   MdProgressSpinnerModule
 } from '@angular/material';
 
 import {NgModule} from "@angular/core";
-import {ReactiveFormsModule} from "@angular/forms";
 
 @NgModule({
   imports: [
     MdButtonModule,
     MdInputModule,
-    MdAutocompleteModule
+    MdAutocompleteModule,
+    MdListModule,
+    MdProgressSpinnerModule
   ],
   exports: [
     MdButtonModule,

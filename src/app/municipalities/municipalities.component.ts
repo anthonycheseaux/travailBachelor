@@ -11,6 +11,7 @@ export class MunicipalitiesComponent implements OnInit {
 
   options: Municipality[] = [];
   loading: boolean;
+  municipalityNb: number;
 
   constructor(private municipalitiesService: MunicipalitiesService) {  }
 
@@ -20,8 +21,11 @@ export class MunicipalitiesComponent implements OnInit {
     this.municipalitiesService.getAllMunicipalities().subscribe(
       (elements: any[]) => this.options = elements,
       (error) => console.log(error),
-      () => this.loading = false
+      () => this.updateAfterLoad()
     );
   }
 
+  private updateAfterLoad(){
+    this.loading = false;
+  }
 }

@@ -23,16 +23,23 @@ export class MunicipalitiesService {
   getAllMunicipalities() {
 
     let query:string =
-      'SELECT ?name (SAMPLE(?id )as ?id) (SAMPLE(?cantonName )as ?canton) (SAMPLE(?districtName )as ?district) ' +
+      'PREFIX gont: <https://gont.ch/>' +
+      'SELECT ?name ' +
+        '(SAMPLE(?id)as ?id) ' +
+        '(SAMPLE(?cantonName)as ?canton) ' +
+        '(SAMPLE(?districtName)as ?district) ' +
+        '(SAMPLE(?municipality)as ?uri)' +
       'WHERE { ' +
-      '?version a <https://gont.ch/MunicipalityVersion>; ' +
-      '<https://gont.ch/municipality> ?municipality ; ' +
-      '<https://gont.ch/longName> ?name; ' +
-      '<https://gont.ch/canton> ?c; ' +
-      '<https://gont.ch/district> ?d. ' +
-      '?c <https://gont.ch/longName> ?cantonName. ' +
-      '?d <https://gont.ch/longName> ?districtName. ' +
-      '?municipality <https://gont.ch/id> ?id. ' +
+        'GRAPH <https://linked.opendata.swiss/graph/eCH-0071> {' +
+          '?version a gont:MunicipalityVersion; ' +
+            'gont:municipality ?municipality ; ' +
+            'gont:longName ?name; ' +
+            'gont:id ?id;' +
+            'gont:canton ?c; ' +
+            'gont:district ?d. ' +
+          '?c gont:longName ?cantonName. ' +
+          '?d gont:longName ?districtName. ' +
+        '} ' +
       '} ' +
       'GROUP BY ?name ' +
       'ORDER BY ASC (?name)';
@@ -48,14 +55,16 @@ export class MunicipalitiesService {
           let name: string;
           let canton: string;
           let district: string;
+          let uri: string;
 
           for(const e of data){
             id = +e.id.value;
             name = e.name.value;
             canton = e.canton.value;
             district = e.district.value;
+            uri = e.district.uri;
 
-            elements.push(new Municipality(id, name, canton, district));
+            elements.push(new Municipality(id, name, canton, district, uri));
           }
 
           //console.log(elements);
@@ -67,13 +76,17 @@ export class MunicipalitiesService {
   getAllMunicipalitiesIdName() {
 
     let query:string =
+      'PREFIX gont: <https://gont.ch/>' +
       'SELECT ?name (SAMPLE(?id )as ?id) ' +
       'WHERE { ' +
-      '?version a <https://gont.ch/MunicipalityVersion>; ' +
-      '<https://gont.ch/municipality> ?municipality ; ' +
-      '<https://gont.ch/longName> ?name. ' +
-      '?municipality <https://gont.ch/id> ?id. ' +
-      '} ' +
+        'GRAPH <https://linked.opendata.swiss/graph/eCH-0071> {' +
+          '?version a gont:MunicipalityVersion; ' +
+          'gont:municipality ?municipality ; ' +
+          'gont:longName ?name. ' +
+        '?municipality gont:id ?id; ' +
+          'a gont:PoliticalMunicipality' +
+      '}' +
+      '}' +
       'GROUP BY ?name ' +
       'ORDER BY ASC (?name)';
 
@@ -88,10 +101,10 @@ export class MunicipalitiesService {
           let name: string;
 
           for(const e of data){
-             id = +e.id.value;
-             name = e.name.value
+            id = +e.id.value;
+            name = e.name.value
 
-            elements.push(new Municipality(id, name, null, null));
+            elements.push(new Municipality(id, name, null, null, null));
           }
 
           //console.log(elements);

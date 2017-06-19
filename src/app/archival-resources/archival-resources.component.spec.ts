@@ -1,20 +1,20 @@
 import { async, ComponentFixture, TestBed } from '@angular/core/testing';
 
-import { ArchivalRessourcesComponent } from './archival-ressources.component';
+import { ArchivalResourcesComponent } from './archival-resources.component';
 
-describe('ArchivalRessourcesComponent', () => {
-  let component: ArchivalRessourcesComponent;
-  let fixture: ComponentFixture<ArchivalRessourcesComponent>;
+describe('ArchivalResourcesComponent', () => {
+  let component: ArchivalResourcesComponent;
+  let fixture: ComponentFixture<ArchivalResourcesComponent>;
 
   beforeEach(async(() => {
     TestBed.configureTestingModule({
-      declarations: [ ArchivalRessourcesComponent ]
+      declarations: [ ArchivalResourcesComponent ]
     })
     .compileComponents();
   }));
 
   beforeEach(() => {
-    fixture = TestBed.createComponent(ArchivalRessourcesComponent);
+    fixture = TestBed.createComponent(ArchivalResourcesComponent);
     component = fixture.componentInstance;
     fixture.detectChanges();
   });

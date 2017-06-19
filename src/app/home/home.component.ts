@@ -1,8 +1,7 @@
-import { Component, OnInit } from '@angular/core';
-import {FormControl} from "@angular/forms";
+import {Component, OnInit} from '@angular/core';
 import {MunicipalitiesService} from "../municipalities/municipalities.service";
-import {Observable} from "rxjs";
 import {Municipality} from "../municipalities/municipality";
+import {Router} from "@angular/router";
 
 @Component({
   selector: 'app-home',
@@ -10,41 +9,7 @@ import {Municipality} from "../municipalities/municipality";
   styleUrls: ['./home.component.css']
 })
 export class HomeComponent implements OnInit {
-
-  /*municipalitiesCtrl: FormControl;
-  filteredMunicipalities: any;
-
-  municipalities: {id: number, name: string}[] = [] ;
-
-  constructor(private municipalitiesService: MunicipalitiesService) {
-    this.municipalitiesCtrl = new FormControl();
-  }
-
-  ngOnInit() {
-    this.municipalitiesService.getAllMunicipalities()
-      .subscribe(
-        (elements: any[]) => this.municipalities = elements,
-        (error) => console.log(error),
-        () => this.init()
-      );
-  }
-
-  filterMunicipalities(val: string) {
-    return val ? this.municipalities.filter(s => new RegExp(`^${val}`, 'gi').test(s))
-      : this.municipalities;
-  }
-
-  init(){
-    this.filteredMunicipalities = this.municipalitiesCtrl.valueChanges
-      .startWith(null)
-      .map(name => this.filterMunicipalities(name));
-  }*/
-
-  myControl = new FormControl();
-  options: Municipality[] = [];
-  filteredOptions: Observable<Municipality[]>;
-
-  constructor(private municipalitiesService: MunicipalitiesService) {  }
+  /*constructor(private municipalitiesService: MunicipalitiesService) {  }
 
   ngOnInit() {
     this.municipalitiesService.getAllMunicipalitiesIdName()
@@ -65,9 +30,51 @@ export class HomeComponent implements OnInit {
   }
 
   init(){
+    this.tdMunicipalities = this.options;
+
     this.filteredOptions = this.myControl.valueChanges
       .startWith(null)
       .map(municipality => municipality && typeof municipality === 'object' ? municipality.name : municipality)
       .map(name => name ? this.filter(name) : this.options.slice());
+  }*/
+
+  ngOnInit() {
+    this.municipalitiesService.getAllMunicipalitiesIdName()
+      .subscribe(
+        (elements: any[]) => this.municipalities = elements,
+        (error) => console.log(error),
+        () => this.init()
+      );
+
+    console.log(this.municipalities);
+  }
+
+  municipalities: Municipality[] = [];
+  currentMunicipality: Municipality = new Municipality(null, null, null, null, null);
+  tdMunicipalities: any[];
+
+  constructor(private router: Router, private municipalitiesService: MunicipalitiesService) {  }
+
+  filterStates(val: string) {
+    return val ? this.municipalities.filter(s => new RegExp(`^${val}`, 'gi').test(s.name))
+      : this.municipalities;
+  }
+
+  init() {
+    this.tdMunicipalities = this.municipalities;
+  }
+
+  onClick(current: string) {
+
+    console.log(current);
+
+    for(let m of this.municipalities){
+      if(m.name.toUpperCase() == current.toUpperCase()) {
+        this.router.navigate(['/municipalities/', m.id, 'archival-resources']);
+      }
+      else {
+
+      }
+    }
   }
 }

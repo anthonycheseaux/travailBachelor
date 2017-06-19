@@ -7,40 +7,26 @@
     </h1>
   </div>
   <div>
-    <form ng-submit="$event.preventDefault()" name="searchForm">
 
-      <md-input-container>
-        <input
-          mdInput placeholder="Commune"
-          [mdAutocomplete]="auto"
-          [formControl]="myControl"
-          size="60px">
-      </md-input-container>
+    <md-input-container *ngIf="true">
+      <input
+        mdInput placeholder="Commune"
+        [mdAutocomplete]="tdAuto"
+        [(ngModel)]="currentMunicipality.name"
+        (ngModelChange)="tdMunicipalities = filterStates(currentMunicipality.name)">
+    </md-input-container>
 
-      <md-autocomplete #auto="mdAutocomplete" [displayWith]="displayFn">
-        <md-option *ngFor="let option of filteredOptions | async" [value]="option">
-          {{ option.name }}
-        </md-option>
-      </md-autocomplete>
+    <button md-button [disabled]="currentMunicipality.name === null || currentMunicipality.name === ''" (click)="onClick(currentMunicipality.name)">
+      Rechercher
+    </button>
 
-      <!--<md-input-container>
-        <input
-          mdInput placeholder="Commune"
-          [formControl] = "myControl"
-          [mdAutocomplete] = "auto">
-      </md-input-container>
+    <md-autocomplete #tdAuto="mdAutocomplete">
+      <md-option *ngFor="let municipality of tdMunicipalities" [value]="municipality.name">
+        <span>{{ municipality.name }}</span>
+      </md-option>
+    </md-autocomplete>
 
-      <md-autocomplete #auto="mdAutocomplete" [displayWith]="displayFn">
-        <md-option *ngFor="let option of filteredOptions | async" [value]="option">
-          {{ options.name }}
-        </md-option>
-      </md-autocomplete>-->
 
-      <button md-raised-button>Afficher</button>
-
-      <div style="margin: 200px">
-
-      </div>
-    </form>
+    <div style="margin: 200px"></div>
   </div>
 </div>
