@@ -6,6 +6,7 @@ export class Municipality{
   canton: string;
   district: string;
   uri: string;
+  versions: Municipality[] = [];
 
   constructor(id: number, name: string, canton: string, district: string, uri: string) {
     this.id = id;

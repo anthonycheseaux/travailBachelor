@@ -11,12 +11,15 @@
     <md-input-container *ngIf="true">
       <input
         mdInput placeholder="Commune"
+        size="40px"
         [mdAutocomplete]="tdAuto"
         [(ngModel)]="currentMunicipality.name"
         (ngModelChange)="tdMunicipalities = filterStates(currentMunicipality.name)">
     </md-input-container>
 
-    <button md-button [disabled]="currentMunicipality.name === null || currentMunicipality.name === ''" (click)="onClick(currentMunicipality.name)">
+    <button
+      md-raised-button
+      [disabled]="currentMunicipality.name === ''" (click)="onClick(currentMunicipality.name)">
       Rechercher
     </button>
 
@@ -26,6 +29,10 @@
       </md-option>
     </md-autocomplete>
 
+    <br>
+    <div *ngIf="invalidName" style="display: inline-block">
+      <p class="alert alert-danger">{{message}}</p>
+    </div>
 
     <div style="margin: 200px"></div>
   </div>
