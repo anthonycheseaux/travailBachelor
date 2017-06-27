@@ -1,44 +1,63 @@
-<div class="container-fluid text-left">
-<!--
-  <div class="col-sm-4 text-center" style="background-color: #555555">
-    test
-  </div>
--->
-
-  <div class="col-sm-12 text-left">
+<div class="container mt-4">
+  <div class="card mb-5">
     <h3 class="text-center">Liste des communes</h3>
-
+    <div class="card-header">Example</div>
     <div class="center-block" *ngIf="loading">
       <md-spinner style="margin:0 auto;" mode="indeterminate"></md-spinner>
     </div>
 
     <div *ngIf="!loading">
-      <p>{{ options.length }} communes sur {{ options.length }}</p>
-      <table class="table table-striped">
-        <thead>
-        <tr>
-          <th>Nom de la commune</th>
-          <th>District</th>
-          <th>Canton</th>
-          <th></th>
-        </tr>
-        </thead>
-        <tbody>
-        <tr *ngFor="let option of options">
-          <td>{{option.name}}</td>
-          <td>{{option.district}}</td>
-          <td>{{option.canton}}</td>
-          <td>
-            <button
-              md-raised-button
-              [routerLink]="['/municipalities/', option.id, 'archival-resources']">
-              Voir les UD
-            </button>
-          </td>
-        </tr>
-        </tbody>
-      </table>
+      <div class="card-block text-left">
+        <form class="form form-inline mb-4">
+          <input
+            class="form-control form-control-sm mb-2 mr-sm-2 mb-lg-0"
+            #search
+            (keyup)="municipalitiesTable.gtSearch(search.value)"
+            placeholder="Search">
+          <br>
+
+          <select
+            id="rows"
+            class="form-control form-control-sm mb-2 mr-sm-2 mb-lg-0"
+            #rowLength
+            (change)="municipalitiesTable.changeRowLength(rowLength.value)">
+            <option value="10">10</option>
+            <option value="25">25</option>
+            <option value="50">50</option>
+            <option value="100">100</option>
+          </select>
+
+          <select
+            id="canton"
+            class="form-control form-control-sm mb-2 mr-sm-2 mb-lg-0"
+            #cantonName
+            (change)="onChange(cantonName.value)" >
+            <option>Tous les cantons</option>
+            <option
+              *ngFor="let canton of cantons"
+              [ngValue]="canton">
+              {{canton.name}}</option>
+          </select>
+        </form>
+
+        <generic-table
+          [gtSettings]="configObject.settings"
+          [gtFields]="configObject.fields"
+          [gtData]="configObject.data"
+          #municipalitiesTable
+          [gtOptions]="{highlightSearch:true}"></generic-table>
+
+        <div class="text-center">
+          <small>
+            <gt-table-info
+              class="form-text text-muted mb-2"
+              [genericTable]="municipalitiesTable"></gt-table-info>
+          </small>
+          <gt-pagination
+            [gtClasses]="'pagination-sm justify-content-center'"
+            [genericTable]="municipalitiesTable"></gt-pagination>
+        </div>
+      </div>
     </div>
   </div>
 </div>
-

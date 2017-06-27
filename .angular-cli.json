@@ -20,7 +20,9 @@
       "prefix": "app",
       "styles": [
         "styles.css",
-        "../node_modules/bootstrap/dist/css/bootstrap.min.css"
+        "../node_modules/bootstrap/dist/css/bootstrap.min.css",
+        "../node_modules/@angular-generic-table/core/css/generic-table.min.css",
+        "../node_modules/@angular-generic-table/column-settings/css/column-settings.min.css"
       ],
       "scripts": [
         "../node_modules/jquery/dist/jquery.min.js",

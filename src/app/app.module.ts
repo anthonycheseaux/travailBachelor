@@ -14,6 +14,9 @@ import {AppMaterialModule} from "./modules/app.material.module";
 import {ReactiveFormsModule, FormsModule} from "@angular/forms";
 import {MunicipalitiesService} from "./municipalities/municipalities.service";
 import {HttpModule} from "@angular/http";
+import {GenericTableModule} from "@angular-generic-table/core";
+import {ColumnSettingsModule} from "@angular-generic-table/column-settings";
+import {CustomRowComponent } from './custom-row/custom-row.component';
 
 @NgModule({
   declarations: [
@@ -23,7 +26,8 @@ import {HttpModule} from "@angular/http";
     ErrorPageComponent,
     PageNotFoundComponent,
     MunicipalitiesComponent,
-    ArchivalResourcesComponent
+    ArchivalResourcesComponent,
+    CustomRowComponent
   ],
   imports: [
     BrowserModule,
@@ -32,7 +36,9 @@ import {HttpModule} from "@angular/http";
     ReactiveFormsModule,
     AppRoutingModule,
     AppMaterialModule,
-    BrowserAnimationsModule
+    BrowserAnimationsModule,
+    GenericTableModule,
+    ColumnSettingsModule
   ],
   providers: [
     MunicipalitiesService

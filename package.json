@@ -12,6 +12,8 @@
   },
   "private": true,
   "dependencies": {
+    "@angular-generic-table/column-settings": "^4.3.1",
+    "@angular-generic-table/core": "^4.3.1",
     "@angular/animations": "^4.2.2",
     "@angular/common": "^4.0.0",
     "@angular/compiler": "^4.0.0",
@@ -24,7 +26,9 @@
     "@angular/router": "^4.0.0",
     "bootstrap": "^3.3.7",
     "core-js": "^2.4.1",
+    "dragula": "^3.7.2",
     "jquery": "^3.2.1",
+    "ng2-dragula": "^1.5.0",
     "rxjs": "^5.1.0",
     "zone.js": "^0.8.4"
   },

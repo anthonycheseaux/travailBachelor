@@ -3,7 +3,7 @@ import { Headers, Http, Response } from '@angular/http'
 import 'rxjs/Rx';
 import {Municipality} from "./municipality";
 
-const endpointUrl  = 'https://lindasprd.netrics.ch:8443/lindas/query?query=';
+const endpointUrl  = 'https://lindasdev.netrics.ch:8443/lindas/query?query=';
 
 @Injectable()
 export class MunicipalitiesService {
