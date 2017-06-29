@@ -11,7 +11,7 @@ import {Router} from "@angular/router";
 export class HomeComponent implements OnInit {
 
   municipalities: Municipality[] = [];
-  currentMunicipality: Municipality = new Municipality(null, '', null, null, null);
+  currentMunicipality: Municipality = new Municipality(null, '', null, null, null, 'false');
   tdMunicipalities: any[];
   invalidName: boolean = false;
   message: string = 'Erreur';

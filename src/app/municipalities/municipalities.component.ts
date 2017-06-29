@@ -4,6 +4,8 @@ import {Municipality} from "./municipality";
 import {GtConfig, GenericTableComponent} from "@angular-generic-table/core";
 import {Router} from "@angular/router";
 import {CustomRowComponent} from "../custom-row/custom-row.component";
+import {Canton} from "./canton";
+import {District} from "./district";
 
 @Component({
   selector: 'app-municipalities',
@@ -12,12 +14,9 @@ import {CustomRowComponent} from "../custom-row/custom-row.component";
 })
 export class MunicipalitiesComponent implements OnInit {
 
-  cantons = [
-    {code: 'VD', name: 'Vaud'},
-    {code: 'FR', name: 'Fribourg'},
-    {code: 'VS', name: 'Valais'},
-    {code: 'BE', name: 'Berne'}
-  ];
+  cantons: Canton[] = [];
+  districts: District[] = [];
+  disableDistricts = true;
 
   options: Municipality[] = [];
   loading: boolean;
@@ -49,6 +48,11 @@ export class MunicipalitiesComponent implements OnInit {
         objectKey: 'UDButton',
         columnOrder: 4,
         sort: 'disable'
+      },{
+        objectKey: 'active',
+        sort:'enable',
+        visible: false,
+        columnOrder: 5
       }];
 
       this.fields = [{
@@ -79,6 +83,11 @@ export class MunicipalitiesComponent implements OnInit {
       (error) => console.log(error),
       () => this.updateAfterLoad()
     );
+
+    this.municipalitiesService.getCantonsDistricts().subscribe(
+      (elements: any[]) => this.cantons = elements,
+      (error) => console.log(error)
+    );
   }
 
   private updateAfterLoad(){
@@ -88,14 +97,34 @@ export class MunicipalitiesComponent implements OnInit {
   }
 
   @ViewChild(GenericTableComponent)
-  private municipalityTable: GenericTableComponent<any, CustomRowComponent>;
+  private municipalitiesTable: GenericTableComponent<any, CustomRowComponent>;
 
-  onChange(cantonName){
+  onChangeCanton(cantonName: string){
     if(cantonName == "Tous les cantons") {
-      this.municipalityTable.gtApplyFilter({});
+      this.districts = [];
+      this.disableDistricts = true;
+      this.municipalitiesTable.gtApplyFilter({});
     }
     else {
-      this.municipalityTable.gtApplyFilter({canton: cantonName});
+      let current: Canton = this.cantons.find(x => x.name == cantonName);
+      this.districts = current.districts;
+      this.disableDistricts = false;
+      this.municipalitiesTable.gtApplyFilter({canton: cantonName});
     }
+  }
+
+  onChangeDistrict(districtName: string){
+    if(districtName == "Tous les districts") {
+      this.municipalitiesTable.gtApplyFilter({});
+    }
+    else {
+      this.municipalitiesTable.gtApplyFilter({district: districtName});
+    }
+  }
+
+  isActiveCheck: boolean = false;
+
+  activeCheck(){
+    this.municipalitiesTable.gtApplyFilter({active: this.isActiveCheck.toString().toLowerCase()})
   }
 }

@@ -3,7 +3,7 @@ import {
   MdInputModule,
   MdAutocompleteModule,
   MdListModule,
-  MdProgressSpinnerModule, MdProgressBarModule, MdSelectModule
+  MdProgressSpinnerModule, MdProgressBarModule, MdSelectModule, MdSelectionModule
 } from '@angular/material';
 
 import {NgModule} from "@angular/core";
@@ -23,7 +23,8 @@ import {NgModule} from "@angular/core";
     MdListModule,
     MdProgressSpinnerModule,
     MdProgressBarModule,
-    MdSelectModule
+    MdSelectModule,
+    MdSelectionModule
   ],
 })
 export class AppMaterialModule { }

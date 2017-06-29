@@ -1,14 +1,24 @@
 <div class="container mt-4">
   <div class="card mb-5">
     <h3 class="text-center">Liste des communes</h3>
-    <div class="card-header">Example</div>
     <div class="center-block" *ngIf="loading">
       <md-spinner style="margin:0 auto;" mode="indeterminate"></md-spinner>
     </div>
 
     <div *ngIf="!loading">
       <div class="card-block text-left">
-        <form class="form form-inline mb-4">
+        <select
+          id="rows"
+          class="form-control form-control-sm mb-2 mr-sm-2 mb-lg-0"
+          #rowLength
+          (change)="municipalitiesTable.changeRowLength(rowLength.value)">
+          <option value="10">10</option>
+          <option value="25">25</option>
+          <option value="50">50</option>
+          <option value="100">100</option>
+        </select>
+
+        <form #filterForm class="form form-inline mb-4">
           <input
             class="form-control form-control-sm mb-2 mr-sm-2 mb-lg-0"
             #search
@@ -17,27 +27,48 @@
           <br>
 
           <select
-            id="rows"
-            class="form-control form-control-sm mb-2 mr-sm-2 mb-lg-0"
-            #rowLength
-            (change)="municipalitiesTable.changeRowLength(rowLength.value)">
-            <option value="10">10</option>
-            <option value="25">25</option>
-            <option value="50">50</option>
-            <option value="100">100</option>
-          </select>
-
-          <select
             id="canton"
             class="form-control form-control-sm mb-2 mr-sm-2 mb-lg-0"
             #cantonName
-            (change)="onChange(cantonName.value)" >
+            (change)="onChangeCanton(cantonName.value)" >
             <option>Tous les cantons</option>
             <option
               *ngFor="let canton of cantons"
               [ngValue]="canton">
               {{canton.name}}</option>
           </select>
+
+          <select
+            id="district"
+            class="form-control form-control-sm mb-2 mr-sm-2 mb-lg-0"
+            #districtName
+            (change)="onChangeDistrict(districtName.value)"
+            [disabled]="disableDistricts">
+            <option>Tous les districts</option>
+            <option
+              *ngFor="let district of districts"
+              [ngValue]="district">
+              {{district.name}}</option>
+          </select>
+
+          <label class="form-check-label">
+            <input
+              name="active"
+              class="form-check-input"
+              type="checkbox"
+              [(ngModel)]="isActiveCheck"
+              (change)="activeCheck()">
+            Active
+          </label>
+
+          <button
+            class="btn btn-secondary btn-sm col-12 col-sm-auto mb-2 mr-sm-2 mb-lg-0"
+            (click)="filterForm.reset();
+                     municipalitiesTable.gtClearFilter();
+                     onChangeCanton(cantonName.value);
+                     municipalitiesTable.gtSearch(search.value)">
+            Remove filter
+          </button>
         </form>
 
         <generic-table
