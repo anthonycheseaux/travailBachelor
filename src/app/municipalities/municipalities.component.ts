@@ -113,12 +113,12 @@ export class MunicipalitiesComponent implements OnInit {
     }
   }
 
-  onChangeDistrict(districtName: string){
+  onChangeDistrict(districtName: string, cantonName: string){
     if(districtName == "Tous les districts") {
       this.municipalitiesTable.gtApplyFilter({});
     }
     else {
-      this.municipalitiesTable.gtApplyFilter({district: districtName});
+      this.municipalitiesTable.gtApplyFilter({canton: cantonName,district: districtName});
     }
   }
 

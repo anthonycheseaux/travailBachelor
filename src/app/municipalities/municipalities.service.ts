@@ -154,7 +154,6 @@ export class MunicipalitiesService {
           let cantonBefore: number = -1;
           for(const e of data){
             if(e.hasOwnProperty('abModeLabel')){
-              console.log(e.hasOwnProperty('abModeLabel'));
               abModeLabel = e.abModeLabel.value;
             }
 
@@ -187,9 +186,35 @@ export class MunicipalitiesService {
             abModeLabel = null;
           }
 
-          console.log(elements);
+          let lastDistrict: District = new District(null, '', null, null, null);
+          let districtToRemove: District[] = [];
+
+          for(const canton of elements){
+            for(const district of canton.districts){
+              if(lastDistrict.name == district.name){
+                if(lastDistrict.abolitionMode == null && district.abolitionMode != null){
+                  districtToRemove.push(district);
+                } else {
+                  districtToRemove.push(lastDistrict);
+                }
+              }
+              lastDistrict = district;
+            }
+
+            for(const i of districtToRemove){
+              canton.districts.splice(canton.districts.indexOf(i), 1);
+            }
+
+            districtToRemove = [];
+          }
           return elements;
         }
       );
+  }
+
+  private removeDistricts(array: District[], index: number[]){
+    for(const i of index){
+      array.splice(i, 1);
+    }
   }
 }

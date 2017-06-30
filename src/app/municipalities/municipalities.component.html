@@ -42,7 +42,7 @@
             id="district"
             class="form-control form-control-sm mb-2 mr-sm-2 mb-lg-0"
             #districtName
-            (change)="onChangeDistrict(districtName.value)"
+            (change)="onChangeDistrict(districtName.value, cantonName.value)"
             [disabled]="disableDistricts">
             <option>Tous les districts</option>
             <option
