@@ -50,27 +50,27 @@
               [ngValue]="district">
               {{district.name}}</option>
           </select>
+          <div class="checkbox">
+            <label class="form-check-label">
+              <input
+                name="active"
+                class="form-check-input"
+                type="checkbox"
+                [(ngModel)]="isActiveCheck"
+                (change)="activeCheck()">
+              Active
+            </label>
+          </div>
 
-          <label class="form-check-label">
-            <input
-              name="active"
-              class="form-check-input"
-              type="checkbox"
-              [(ngModel)]="isActiveCheck"
-              (change)="activeCheck()">
-            Active
-          </label>
-
-          <button
-            class="btn btn-secondary btn-sm col-12 col-sm-auto mb-2 mr-sm-2 mb-lg-0"
-            (click)="filterForm.reset();
+          <a class="btn btn-primary"
+             (click)="filterForm.reset();
                      municipalitiesTable.gtClearFilter();
                      onChangeCanton(cantonName.value);
                      municipalitiesTable.gtSearch(search.value)">
             Remove filter
-          </button>
+          </a>
         </form>
-
+<div class="col-md-8">
         <generic-table
           [gtSettings]="configObject.settings"
           [gtFields]="configObject.fields"
@@ -88,6 +88,7 @@
             [gtClasses]="'pagination-sm justify-content-center'"
             [genericTable]="municipalitiesTable"></gt-pagination>
         </div>
+</div>
       </div>
     </div>
   </div>

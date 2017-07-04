@@ -70,7 +70,7 @@ export class MunicipalitiesComponent implements OnInit {
       },{
         objectKey: 'UDButton', name: '',
         value: () => '',
-        render: () => ' <button md-raised-button"> Voir les UD </button>',
+        render: () => ' <a class="btn btn-primary"> Voir les UD </button>',
         click: (row) => this.router.navigate(['/municipalities/', row.id, 'archival-resources'])
       }];
     }
