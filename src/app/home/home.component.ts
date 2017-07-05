@@ -1,6 +1,6 @@
 import {Component, OnInit} from '@angular/core';
 import {MunicipalitiesService} from "../municipalities/municipalities.service";
-import {Municipality} from "../municipalities/municipality";
+import {Municipality} from "../objects/municipality";
 import {Router} from "@angular/router";
 
 @Component({

@@ -17,6 +17,7 @@ import {HttpModule} from "@angular/http";
 import {GenericTableModule} from "@angular-generic-table/core";
 import {ColumnSettingsModule} from "@angular-generic-table/column-settings";
 import {CustomRowComponent } from './custom-row/custom-row.component';
+import { AboutComponent } from './about/about.component';
 
 @NgModule({
   declarations: [
@@ -27,7 +28,8 @@ import {CustomRowComponent } from './custom-row/custom-row.component';
     PageNotFoundComponent,
     MunicipalitiesComponent,
     ArchivalResourcesComponent,
-    CustomRowComponent
+    CustomRowComponent,
+    AboutComponent
   ],
   imports: [
     BrowserModule,

@@ -1,11 +1,11 @@
 import {Component, OnInit, ViewChild} from '@angular/core';
 import {MunicipalitiesService} from "./municipalities.service";
-import {Municipality} from "./municipality";
+import {Municipality} from "../objects/municipality";
 import {GtConfig, GenericTableComponent} from "@angular-generic-table/core";
 import {Router} from "@angular/router";
 import {CustomRowComponent} from "../custom-row/custom-row.component";
-import {Canton} from "./canton";
-import {District} from "./district";
+import {Canton} from "../objects/canton";
+import {District} from "../objects/district";
 
 @Component({
   selector: 'app-municipalities',
@@ -14,6 +14,7 @@ import {District} from "./district";
 })
 export class MunicipalitiesComponent implements OnInit {
 
+  states: string[] = ["Actif", "Inactif"];
   cantons: Canton[] = [];
   districts: District[] = [];
   disableDistricts = true;
@@ -49,7 +50,7 @@ export class MunicipalitiesComponent implements OnInit {
         columnOrder: 4,
         sort: 'disable'
       },{
-        objectKey: 'active',
+        objectKey: 'state',
         sort:'enable',
         visible: false,
         columnOrder: 5
@@ -122,9 +123,18 @@ export class MunicipalitiesComponent implements OnInit {
     }
   }
 
-  isActiveCheck: boolean = false;
+  onChangeState(state: string){
+    if(state == "Tous les statuts") {
+      this.municipalitiesTable.gtApplyFilter({});
+    }
+    else {
+      this.municipalitiesTable.gtApplyFilter({state: state});
+    }
+  }
+
+/*  isActiveCheck: boolean = false;
 
   activeCheck(){
     this.municipalitiesTable.gtApplyFilter({active: this.isActiveCheck.toString().toLowerCase()})
-  }
+  }*/
 }

@@ -1,5 +1,4 @@
-
-<div class="row text-center" style="padding-top: 30px; padding-bottom: 30px;">
+<div class="row text-center">
   <div class="col-md-12">
     <h2>
       <span>Retrouvez votre commune</span>
@@ -7,9 +6,7 @@
       <span>dans les Archives fédérales suisses</span>
     </h2>
   </div>
-</div>
 
-<div class="row" style="padding-top: 30px; padding-bottom: 30px;">
   <div class="col-md-12">
     <md-input-container *ngIf="true">
       <input
@@ -21,7 +18,7 @@
     </md-input-container>
 
     <a class="btn btn-primary"
-      (click)="onClick(currentMunicipality.name)">
+       (click)="onClick(currentMunicipality.name)">
       Rechercher
     </a>
 
@@ -32,8 +29,17 @@
     </md-autocomplete>
 
     <br>
+
     <div *ngIf="invalidName" style="display: inline-block">
       <p class="alert alert-danger">{{message}}</p>
+    </div>
+
+    <br><br>
+
+    <div id="links">
+      <h5><a routerLink="municipalities">Liste des communes suisses</a></h5>
+      <br>
+      <h5><a routerLink="about">À propos du prototype</a></h5>
     </div>
   </div>
 </div>

@@ -1,9 +1,9 @@
 import { Injectable } from '@angular/core';
 import { Headers, Http, Response } from '@angular/http'
 import 'rxjs/Rx';
-import {Municipality} from "./municipality";
-import {Canton} from "./canton";
-import {District} from "./district";
+import {Municipality} from "../objects/municipality";
+import {Canton} from "../objects/canton";
+import {District} from "../objects/district";
 
 const endpointUrl  = 'https://lindasdev.netrics.ch:8443/lindas/query?query=';
 
@@ -66,7 +66,7 @@ export class MunicipalitiesService {
             district = e.district.value;
             uri = e.district.uri;
 
-            elements.push(new Municipality(id, name, canton, district, uri, 'true'));
+            elements.push(new Municipality(id, name, canton, district, uri, 'Actif'));
           }
 
           //console.log(elements);
@@ -106,7 +106,7 @@ export class MunicipalitiesService {
             id = +e.id.value;
             name = e.name.value
 
-            elements.push(new Municipality(id, name, null, null, null, 'true'));
+            elements.push(new Municipality(id, name, null, null, null, 'Actif'));
           }
 
           //console.log(elements);

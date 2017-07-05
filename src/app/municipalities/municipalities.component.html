@@ -1,95 +1,152 @@
-<div class="container mt-4">
-  <div class="card mb-5">
-    <h3 class="text-center">Liste des communes</h3>
-    <div class="center-block" *ngIf="loading">
-      <md-spinner style="margin:0 auto;" mode="indeterminate"></md-spinner>
-    </div>
+<div class="col-md-12 center-block" *ngIf="loading">
+  <h3 class="text-center">Liste des communes</h3>
+  <md-spinner style="margin:0 auto;" mode="indeterminate"></md-spinner>
+</div>
 
-    <div *ngIf="!loading">
-      <div class="card-block text-left">
-        <select
-          id="rows"
-          class="form-control form-control-sm mb-2 mr-sm-2 mb-lg-0"
-          #rowLength
-          (change)="municipalitiesTable.changeRowLength(rowLength.value)">
-          <option value="10">10</option>
-          <option value="25">25</option>
-          <option value="50">50</option>
-          <option value="100">100</option>
-        </select>
+<div *ngIf="!loading">
 
-        <form #filterForm class="form form-inline mb-4">
-          <input
-            class="form-control form-control-sm mb-2 mr-sm-2 mb-lg-0"
-            #search
-            (keyup)="municipalitiesTable.gtSearch(search.value)"
-            placeholder="Search">
-          <br>
+  <h3 class="text-center">Liste des communes</h3><br><br>
 
-          <select
-            id="canton"
-            class="form-control form-control-sm mb-2 mr-sm-2 mb-lg-0"
-            #cantonName
-            (change)="onChangeCanton(cantonName.value)" >
-            <option>Tous les cantons</option>
-            <option
-              *ngFor="let canton of cantons"
-              [ngValue]="canton">
-              {{canton.name}}</option>
-          </select>
+  <div class="row">
 
-          <select
-            id="district"
-            class="form-control form-control-sm mb-2 mr-sm-2 mb-lg-0"
-            #districtName
-            (change)="onChangeDistrict(districtName.value, cantonName.value)"
-            [disabled]="disableDistricts">
-            <option>Tous les districts</option>
-            <option
-              *ngFor="let district of districts"
-              [ngValue]="district">
-              {{district.name}}</option>
-          </select>
-          <div class="checkbox">
-            <label class="form-check-label">
-              <input
-                name="active"
-                class="form-check-input"
-                type="checkbox"
-                [(ngModel)]="isActiveCheck"
-                (change)="activeCheck()">
-              Active
-            </label>
+    <div id="filters" class="col-md-3">
+
+      <div class="panel-group">
+        <div class="panel panel-primary">
+          <div class="panel-heading">
+            <h4 class="panel-title">
+              <a data-toggle="collapse" href="#collapse1" class="toggle">Filtres</a>
+            </h4>
           </div>
+          <div id="collapse1" class="panel-collapse collapse in">
+            <div class="panel-body">
+              <form #filterForm class="form-horizontal">
 
-          <a class="btn btn-primary"
-             (click)="filterForm.reset();
+                <label class="control-label">Rechercher dans la liste</label>
+                <input
+                  class="form-control"
+                  #search
+                  (keyup)="municipalitiesTable.gtSearch(search.value)"
+                  placeholder="Ex: Bern">
+
+                <hr>
+
+                <label class="control-label" for="canton">Cantons</label>
+                <select
+                  id="canton"
+                  class="form-control"
+                  #cantonName
+                  (change)="onChangeCanton(cantonName.value)" >
+                  <option>Tous les cantons</option>
+                  <option
+                    *ngFor="let canton of cantons"
+                    [ngValue]="canton">
+                    {{canton.name}}</option>
+                </select>
+
+                <hr>
+
+                <label class="control-label" for="district">Districts</label>
+                <select
+                  id="district"
+                  class="form-control"
+                  #districtName
+                  (change)="onChangeDistrict(districtName.value, cantonName.value)"
+                  [disabled]="disableDistricts">
+                  <option>Tous les districts</option>
+                  <option
+                    *ngFor="let district of districts"
+                    [ngValue]="district">
+                    {{district.name}}</option>
+                </select>
+
+                <hr>
+
+                <label class="control-label" for="state">Satuts</label>
+                <select
+                  id="state"
+                  class="form-control"
+                  #state
+                  (change)="onChangeState(state.value)">
+                  <option>Tous les statuts</option>
+                  <option
+                    *ngFor="let state of states"
+                    [ngValue]="statut">
+                    {{state}}</option>
+                </select>
+
+                <!-- <div class="checkbox">
+                   <label class="form-check-label" style="font-size: medium; font-weight: bold">
+                     <input
+                       name="active"
+                       class="form-check-input"
+                       type="checkbox"
+                       [(ngModel)]="isActiveCheck"
+                       (change)="activeCheck()">
+                     Afficher uniquement les communes actives
+                   </label>
+                 </div>-->
+
+                <hr>
+                <div align="center">
+                  <a class="btn btn-danger"
+                     (click)="filterForm.reset();
                      municipalitiesTable.gtClearFilter();
                      onChangeCanton(cantonName.value);
-                     municipalitiesTable.gtSearch(search.value)">
-            Remove filter
-          </a>
-        </form>
-<div class="col-md-8">
-        <generic-table
-          [gtSettings]="configObject.settings"
-          [gtFields]="configObject.fields"
-          [gtData]="configObject.data"
-          #municipalitiesTable
-          [gtOptions]="{highlightSearch:true}"></generic-table>
-
-        <div class="text-center">
-          <small>
-            <gt-table-info
-              class="form-text text-muted mb-2"
-              [genericTable]="municipalitiesTable"></gt-table-info>
-          </small>
-          <gt-pagination
-            [gtClasses]="'pagination-sm justify-content-center'"
-            [genericTable]="municipalitiesTable"></gt-pagination>
+                     onChangeState(state.value);
+                     municipalitiesTable.gtSearch(search.value);">
+                    Réinitialitiser les filtres
+                  </a>
+                </div>
+              </form>
+            </div>
+            <!--<div class="panel-footer"></div>-->
+          </div>
         </div>
-</div>
+      </div>
+      <div class="row"><div class="col-md-12"><br></div></div>
+
+
+    </div>
+
+    <div id="result-table" class="col-md-9">
+
+      <div class="row">
+        <div class="col-md-6">
+          <gt-table-info
+            class="form-text text-muted mb-2"
+            [genericTable]="municipalitiesTable"></gt-table-info>
+        </div>
+        <div class="col-md-3 col-md-offset-3 text-right">
+          <select
+            id="rows"
+            #rowLength
+            (change)="municipalitiesTable.changeRowLength(rowLength.value)"
+            style="width: 50px">
+            <option value="10">10</option>
+            <option value="25">25</option>
+            <option value="50">50</option>
+            <option value="100">100</option>
+          </select>
+
+          par page
+        </div>
+      </div>
+
+      <generic-table
+        [gtSettings]="configObject.settings"
+        [gtFields]="configObject.fields"
+        [gtData]="configObject.data"
+        #municipalitiesTable
+        [gtOptions]="{highlightSearch:true}"></generic-table>
+
+      <div class="text-center">
+        <gt-pagination
+          [gtClasses]="'pagination-sm justify-content-center'"
+          [genericTable]="municipalitiesTable"></gt-pagination>
       </div>
     </div>
+
   </div>
+
 </div>
