@@ -1,20 +1,14 @@
+import {MunicipalityVersion} from "./municipality-version";
 
 export class Municipality{
 
   id: number;
-  name: string;
-  canton: string;
-  district: string;
   uri: string;
-  versions: Municipality[] = [];
-  state: string;
+  versions: MunicipalityVersion[];
 
-  constructor(id: number, name: string, canton: string, district: string, uri: string, state: string) {
+  constructor(id: number, uri: string) {
     this.id = id;
-    this.name = name;
-    this.canton = canton;
-    this.district = district;
     this.uri = uri;
-    this.state = state;
+    this.versions = [];
   }
 }

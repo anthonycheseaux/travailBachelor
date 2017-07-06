@@ -4,6 +4,8 @@ import 'rxjs/Rx';
 import {Municipality} from "../objects/municipality";
 import {Canton} from "../objects/canton";
 import {District} from "../objects/district";
+import {MunicipalityVersion} from "../objects/municipality-version";
+import {Mutation} from "../objects/mutation";
 
 const endpointUrl  = 'https://lindasdev.netrics.ch:8443/lindas/query?query=';
 
@@ -24,27 +26,121 @@ export class MunicipalitiesService {
 
   getAllMunicipalities() {
 
+  let query:string =
+    'PREFIX gont: <https://gont.ch/>' +
+    'SELECT ?version ?id ?name ?municipalityId ?cantonName ?districtName ?adEvent ?adId ?adDate ?adLabel ?abEvent ?abId ?abDate ?abLabel ' +
+    'FROM <https://linked.opendata.swiss/graph/eCH-0071> ' +
+    'WHERE { ' +
+    '?municipality a gont:PoliticalMunicipality; ' +
+    'gont:id ?municipalityId. ' +
+    '?version a gont:MunicipalityVersion; ' +
+    'gont:municipality ?municipality ; ' +
+    'gont:longName ?name; ' +
+    'gont:id ?id; ' +
+    'gont:canton ?canton; ' +
+    'gont:district ?d; ' +
+    'gont:admissionEvent ?adEvent; ' +
+    'gont:admissionMode ?adMode. ' +
+    '?canton gont:longName ?cantonName. ' +
+    '?d gont:longName ?districtName. ' +
+    '?adEvent gont:date ?adDate; ' +
+    'gont:id ?adId. ' +
+    '?adMode skos:notation ?adLabel. ' +
+    'OPTIONAL{ ' +
+    '?version gont:abolitionEvent ?abEvent. ' +
+    '?version gont:abolitionMode ?abMode. ' +
+    '?abEvent gont:date ?abDate; ' +
+    'gont:id ?abId. ' +
+    '?abMode skos:notation ?abLabel. ' +
+    '} ' +
+    '} ' +
+    'ORDER BY ASC (?name) DESC (?adDate)';
+
+  let getUrl = endpointUrl+encodeURIComponent(query);
+
+  return this.http.get(getUrl, {headers: this.getHeaders()})
+    .map(
+      (response: Response) => {
+        let data = response.json().results.bindings;
+        let elements: MunicipalityVersion[] = [];
+
+        //console.log(data);
+
+        let abolitionMutation: Mutation;
+        let admissionMutation: Mutation;
+        let currentVersion: MunicipalityVersion;
+        let state: number = -1;
+
+        for(const e of data){
+          if(e.hasOwnProperty('abEvent')){
+            state = 1;
+            abolitionMutation = new Mutation(
+              e.abId.value,
+              e.abEvent.value,
+              e.abDate.value,
+              +e.abLabel.value
+            );
+          }
+          else {
+            abolitionMutation = new Mutation(null, null, null, -1);
+            state = 0;
+          }
+
+          admissionMutation = new Mutation(
+            e.adId.value,
+            e.adEvent.value,
+            e.adDate.value,
+            +e.adLabel.value
+          );
+
+          elements.push(new MunicipalityVersion(
+            e.id.value,
+            e.version.value,
+            e.name.value,
+            e.municipalityId.value,
+            state,
+            e.cantonName.value,
+            e.districtName.value,
+            admissionMutation,
+            abolitionMutation
+          ));
+
+          state = -1;
+        }
+
+        //console.log(elements);
+        return elements;
+      }
+    );
+}
+
+  getActiveMunicipalities() {
+
     let query:string =
       'PREFIX gont: <https://gont.ch/>' +
-      'SELECT ?name ' +
-        '(SAMPLE(?id)as ?id) ' +
-        '(SAMPLE(?cantonName)as ?canton) ' +
-        '(SAMPLE(?districtName)as ?district) ' +
-        '(SAMPLE(?municipality)as ?uri)' +
+      'SELECT ?version ?id ?name ?municipalityId ?cantonName ?districtName ?adEvent ?adId ?adDate ?adLabel ' +
+      'FROM <https://linked.opendata.swiss/graph/eCH-0071> ' +
       'WHERE { ' +
-        'GRAPH <https://linked.opendata.swiss/graph/eCH-0071> {' +
-          '?version a gont:MunicipalityVersion; ' +
-            'gont:municipality ?municipality ; ' +
-            'gont:longName ?name; ' +
-            'gont:id ?id;' +
-            'gont:canton ?c; ' +
-            'gont:district ?d. ' +
-          '?c gont:longName ?cantonName. ' +
-          '?d gont:longName ?districtName. ' +
-        '} ' +
+      '?municipality a gont:PoliticalMunicipality; ' +
+      'gont:id ?municipalityId. ' +
+      '?version a gont:MunicipalityVersion; ' +
+      'gont:municipality ?municipality ; ' +
+      'gont:longName ?name; ' +
+      'gont:id ?id; ' +
+      'gont:canton ?canton; ' +
+      'gont:district ?d; ' +
+      'gont:admissionEvent ?adEvent; ' +
+      'gont:admissionMode ?adMode. ' +
+      '?canton gont:longName ?cantonName. ' +
+      '?d gont:longName ?districtName. ' +
+      '?adEvent gont:date ?adDate; ' +
+      'gont:id ?adId. ' +
+      '?adMode skos:notation ?adLabel. ' +
+      'MINUS{ ' +
+      '?version gont:abolitionEvent ?abEvent. ' +
       '} ' +
-      'GROUP BY ?name ' +
-      'ORDER BY ASC (?name)';
+      '} ' +
+      'ORDER BY ASC (?name) DESC (?adDate)';
 
     let getUrl = endpointUrl+encodeURIComponent(query);
 
@@ -52,21 +148,35 @@ export class MunicipalitiesService {
       .map(
         (response: Response) => {
           let data = response.json().results.bindings;
-          let elements: Municipality[] = [];
-          let id: number;
-          let name: string;
-          let canton: string;
-          let district: string;
-          let uri: string;
+          let elements: MunicipalityVersion[] = [];
+
+          //console.log(data);
+
+          let abolitionMutation: Mutation = new Mutation(null, null, null, -1);
+          let admissionMutation: Mutation;
+          let state: number = -1;
 
           for(const e of data){
-            id = +e.id.value;
-            name = e.name.value;
-            canton = e.canton.value;
-            district = e.district.value;
-            uri = e.district.uri;
+            admissionMutation = new Mutation(
+              e.adId.value,
+              e.adEvent.value,
+              e.adDate.value,
+              +e.adLabel.value
+            );
 
-            elements.push(new Municipality(id, name, canton, district, uri, 'Actif'));
+            elements.push(new MunicipalityVersion(
+              e.id.value,
+              e.version.value,
+              e.name.value,
+              e.municipalityId.value,
+              state,
+              e.cantonName.value,
+              e.districtName.value,
+              admissionMutation,
+              abolitionMutation
+            ));
+
+            state = -1;
           }
 
           //console.log(elements);
@@ -106,7 +216,7 @@ export class MunicipalitiesService {
             id = +e.id.value;
             name = e.name.value
 
-            elements.push(new Municipality(id, name, null, null, null, 'Actif'));
+            //elements.push(new Municipality(id, name, null, null, null, 'Actif'));
           }
 
           //console.log(elements);

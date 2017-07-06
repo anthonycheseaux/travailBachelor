@@ -2,6 +2,7 @@ import {Component, OnInit} from '@angular/core';
 import {MunicipalitiesService} from "../municipalities/municipalities.service";
 import {Municipality} from "../objects/municipality";
 import {Router} from "@angular/router";
+import {MunicipalityVersion} from "../objects/municipality-version";
 
 @Component({
   selector: 'app-home',
@@ -10,14 +11,14 @@ import {Router} from "@angular/router";
 })
 export class HomeComponent implements OnInit {
 
-  municipalities: Municipality[] = [];
-  currentMunicipality: Municipality = new Municipality(null, '', null, null, null, 'false');
+  municipalities: MunicipalityVersion[] = [];
+  currentMunicipality: MunicipalityVersion = new MunicipalityVersion(null, null, '', null, -1, null, null, null, null);
   tdMunicipalities: any[];
   invalidName: boolean = false;
   message: string = 'Erreur';
 
   ngOnInit() {
-    this.municipalitiesService.getAllMunicipalitiesIdName()
+    this.municipalitiesService.getActiveMunicipalities()
       .subscribe(
         (elements: any[]) => this.municipalities = elements,
         (error) => console.log(error),

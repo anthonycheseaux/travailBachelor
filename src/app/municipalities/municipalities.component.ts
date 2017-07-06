@@ -6,6 +6,14 @@ import {Router} from "@angular/router";
 import {CustomRowComponent} from "../custom-row/custom-row.component";
 import {Canton} from "../objects/canton";
 import {District} from "../objects/district";
+import {MunicipalityVersion} from "../objects/municipality-version";
+import {assertNotNull} from "@angular/compiler/src/output/output_ast";
+
+interface IFilters{
+  canton?:string;
+  district?:string;
+  state?:string;
+}
 
 @Component({
   selector: 'app-municipalities',
@@ -19,7 +27,7 @@ export class MunicipalitiesComponent implements OnInit {
   districts: District[] = [];
   disableDistricts = true;
 
-  options: Municipality[] = [];
+  options: MunicipalityVersion[] = [];
   loading: boolean;
   municipalityNb: number = 0;
 
@@ -32,28 +40,46 @@ export class MunicipalitiesComponent implements OnInit {
         objectKey:'id',
         sort:'disable',
         visible:false,
-        columnOrder:0
+        columnOrder:0,
+        search: false
       },{
         objectKey:'name',
         sort:'enable',
-        columnOrder:1
+        columnOrder:1,
+        search: true
       },{
         objectKey:'district',
         sort:'enable',
-        columnOrder:2
+        columnOrder:2,
+        search: false
       },{
         objectKey:'canton',
         sort:'enable',
-        columnOrder:3
+        columnOrder:3,
+        search: false
+      },{
+        objectKey: 'abolitionDate',
+        sort: 'disable',
+        visible: true,
+        columnOrder: 4,
+        search: false
+      },{
+        objectKey: 'abolitionLabel',
+        sort: 'disable',
+        visible: true,
+        columnOrder: 5,
+        search: false
       },{
         objectKey: 'UDButton',
-        columnOrder: 4,
-        sort: 'disable'
+        columnOrder: 6,
+        sort: 'disable',
+        search: false
       },{
         objectKey: 'state',
         sort:'enable',
         visible: false,
-        columnOrder: 5
+        columnOrder: 7,
+        search: false
       }];
 
       this.fields = [{
@@ -68,6 +94,16 @@ export class MunicipalitiesComponent implements OnInit {
         name:'Canton',
         objectKey:'canton',
         classNames: 'sort-string'
+      },{
+        name:'Radiée le',
+        objectKey:'abolitionDate',
+        classNames: 'sort-string',
+        value: function(row){return row.abolitionMutation.date}
+      },{
+        name:'Motif',
+        objectKey:'abolitionLabel',
+        classNames: 'sort-string',
+        value: function(row){return row.abolitionMutation.mutationLabel}
       },{
         objectKey: 'UDButton', name: '',
         value: () => '',
@@ -99,6 +135,33 @@ export class MunicipalitiesComponent implements OnInit {
 
   @ViewChild(GenericTableComponent)
   private municipalitiesTable: GenericTableComponent<any, CustomRowComponent>;
+
+  onChangeFilter(cantonName:string, districtName: string, state: string){
+    console.log(cantonName + " " + districtName + " " + state);
+    let filters: IFilters = {};
+
+    if(cantonName == "Tous les cantons"){
+      this.districts = [];
+      this.disableDistricts = true;
+    }
+    else {
+      let current: Canton = this.cantons.find(x => x.name == cantonName);
+      this.districts = current.districts;
+      this.disableDistricts = false;
+      filters.canton = cantonName;
+    }
+
+    if(districtName != "Tous les districts"){
+      filters.district = districtName;
+    }
+    else
+
+    if(state != "Tous les statuts"){
+      filters.state = state;
+    }
+
+    this.municipalitiesTable.gtApplyFilter(filters);
+  }
 
   onChangeCanton(cantonName: string){
     if(cantonName == "Tous les cantons") {

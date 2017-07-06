@@ -27,7 +27,7 @@
                   class="form-control"
                   #search
                   (keyup)="municipalitiesTable.gtSearch(search.value)"
-                  placeholder="Ex: Bern">
+                  placeholder="Nom de la commune">
 
                 <hr>
 
@@ -36,7 +36,7 @@
                   id="canton"
                   class="form-control"
                   #cantonName
-                  (change)="onChangeCanton(cantonName.value)" >
+                  (change)="onChangeFilter(cantonName.value, districtName.value, state.value)" >
                   <option>Tous les cantons</option>
                   <option
                     *ngFor="let canton of cantons"
@@ -51,7 +51,7 @@
                   id="district"
                   class="form-control"
                   #districtName
-                  (change)="onChangeDistrict(districtName.value, cantonName.value)"
+                  (change)="onChangeFilter(cantonName.value, districtName.value, state.value)"
                   [disabled]="disableDistricts">
                   <option>Tous les districts</option>
                   <option
@@ -67,7 +67,7 @@
                   id="state"
                   class="form-control"
                   #state
-                  (change)="onChangeState(state.value)">
+                  (change)="onChangeFilter(cantonName.value, districtName.value, state.value)">
                   <option>Tous les statuts</option>
                   <option
                     *ngFor="let state of states"
@@ -89,7 +89,7 @@
 
                 <hr>
                 <div align="center">
-                  <a class="btn btn-danger"
+                  <a class="btn btn-info"
                      (click)="filterForm.reset();
                      municipalitiesTable.gtClearFilter();
                      onChangeCanton(cantonName.value);
@@ -112,12 +112,12 @@
     <div id="result-table" class="col-md-9">
 
       <div class="row">
-        <div class="col-md-6">
+        <div class="col-md-7">
           <gt-table-info
             class="form-text text-muted mb-2"
             [genericTable]="municipalitiesTable"></gt-table-info>
         </div>
-        <div class="col-md-3 col-md-offset-3 text-right">
+        <div class="col-md-3 col-md-offset-2 text-right">
           <select
             id="rows"
             #rowLength
