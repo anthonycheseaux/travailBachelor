@@ -18,6 +18,7 @@ import {GenericTableModule} from "@angular-generic-table/core";
 import {ColumnSettingsModule} from "@angular-generic-table/column-settings";
 import {CustomRowComponent } from './custom-row/custom-row.component';
 import { AboutComponent } from './about/about.component';
+import {ArchivalResourcesService} from "./archival-resources/archival-resources.service";
 
 @NgModule({
   declarations: [
@@ -43,7 +44,8 @@ import { AboutComponent } from './about/about.component';
     ColumnSettingsModule
   ],
   providers: [
-    MunicipalitiesService
+    MunicipalitiesService,
+    ArchivalResourcesService
   ],
   bootstrap: [AppComponent]
 })

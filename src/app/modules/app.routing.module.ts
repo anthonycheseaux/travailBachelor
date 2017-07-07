@@ -6,13 +6,14 @@ import {MunicipalitiesComponent} from "../municipalities/municipalities.componen
 import {MapComponent} from "../map/map.component";
 import {ArchivalResourcesComponent} from "../archival-resources/archival-resources.component";
 import {AboutComponent} from "../about/about.component";
+import {MunicipalitiesService} from "../municipalities/municipalities.service";
 
 
 const appRoutes: Routes = [
   { path: '', component: HomeComponent },
   { path: 'municipalities', component: MunicipalitiesComponent },
   { path: 'about', component: AboutComponent },
-  { path: 'municipalities/:id/archival-resources', component: ArchivalResourcesComponent}
+  { path: 'municipalities/:id/archival-resources', component: ArchivalResourcesComponent }
   // { path: 'not-found', component: ErrorPageComponent, data: {message: 'Page not found!'} },
   // { path: '**', redirectTo: '/not-found'}
 ];

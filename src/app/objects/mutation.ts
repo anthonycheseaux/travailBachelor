@@ -14,7 +14,7 @@ export class Mutation {
 }
 
 enum ConceptLabel {
-  ""  = -1,
+  ""                                                  = -1,
   "Statut provisoire"                                 = 0,  //Status provisorisch
   "Statut définitif"                                  =	1,  //Status definitiv
   "Commune politique"                                 =	11, //Politische Gemeinde

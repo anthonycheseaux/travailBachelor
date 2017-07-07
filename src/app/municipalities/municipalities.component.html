@@ -36,7 +36,7 @@
                   id="canton"
                   class="form-control"
                   #cantonName
-                  (change)="onChangeFilter(cantonName.value, districtName.value, state.value)" >
+                  (change)="onChangeFilter(cantonName.value, districtName.value, stateName.value)" >
                   <option>Tous les cantons</option>
                   <option
                     *ngFor="let canton of cantons"
@@ -51,7 +51,7 @@
                   id="district"
                   class="form-control"
                   #districtName
-                  (change)="onChangeFilter(cantonName.value, districtName.value, state.value)"
+                  (change)="onChangeFilter(cantonName.value, districtName.value, stateName.value)"
                   [disabled]="disableDistricts">
                   <option>Tous les districts</option>
                   <option
@@ -66,13 +66,10 @@
                 <select
                   id="state"
                   class="form-control"
-                  #state
-                  (change)="onChangeFilter(cantonName.value, districtName.value, state.value)">
+                  #stateName
+                  (change)="onChangeFilter(cantonName.value, districtName.value, stateName.value)">
                   <option>Tous les statuts</option>
-                  <option
-                    *ngFor="let state of states"
-                    [ngValue]="statut">
-                    {{state}}</option>
+                  <option *ngFor="let state of states" [ngValue]="state">{{state}}</option>
                 </select>
 
                 <!-- <div class="checkbox">
@@ -92,8 +89,7 @@
                   <a class="btn btn-info"
                      (click)="filterForm.reset();
                      municipalitiesTable.gtClearFilter();
-                     onChangeCanton(cantonName.value);
-                     onChangeState(state.value);
+                     onChangeFilter(cantonName.value, districtName.value, stateName.value);
                      municipalitiesTable.gtSearch(search.value);">
                     Réinitialitiser les filtres
                   </a>
