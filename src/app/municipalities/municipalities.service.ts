@@ -25,7 +25,7 @@ export class MunicipalitiesService {
     return headers;
   }
 
-  getHistory(ids: number[]){
+  getHistory(uris: string){
     let query:string = '';
 
     let getUrl = endpointUrl+encodeURIComponent(query);
@@ -79,12 +79,10 @@ export class MunicipalitiesService {
       .map(
         (response: Response) => {
           let data = response.json().results.bindings;
-          let elements: MunicipalityVersion[] = [];
-
-          console.log(data);
+          let elements = [];
 
           for (const e of data) {
-
+            elements.push({'uri': e.otherVersion.value, 'name': e.otherVersionLabel.value});
           }
 
           return elements;

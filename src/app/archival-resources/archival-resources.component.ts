@@ -33,14 +33,29 @@ export class ArchivalResourcesComponent implements OnInit {
 
   private getRelatedMunicipalities(id: number){
     this.municipalitiesService.getRelatedMunicipalities(id).subscribe(
-      (elements: any[]) => this.afterLoadRelated(elements),
+      (related: any[]) => this.afterLoadRelated(related),
       (error) => console.log(error)
     );
   }
 
-  private afterLoadRelated(elements: any[]){
-    let ids: number[];
-    this.municipalitiesService.getHistory(ids).subscribe(
+  private afterLoadRelated(related: any[]){
+    let uris: string = '';
+    let names: string = '';
+
+    for(const element of related){
+      uris = uris + ' ' + element.uri ;
+
+      if(names.indexOf(element.name) == -1){
+        names = names + "\"" + element.name + "\"" + " OR ";
+      }
+    }
+
+    names = names.substring(0, names.length-4);
+
+    console.log(uris);
+    console.log(names);
+
+    this.municipalitiesService.getHistory(uris).subscribe(
       (elements: any[]) => this.afterLoadRelated(elements),
       (error) => console.log(error)
     );
