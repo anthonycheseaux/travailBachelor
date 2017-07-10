@@ -1,0 +1,17 @@
+.panel-heading .toggle:after {
+  font-family: 'Glyphicons Halflings';
+  content: "\e114";
+  float: right;
+}
+.panel-heading .toggle.collapsed:after {
+  content: "\e080";
+}
+
+.control-label {
+  font-size: medium;
+  font-weight: bold;
+}
+
+.panel-title {
+  font-weight: bold;
+}

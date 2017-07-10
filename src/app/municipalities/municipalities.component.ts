@@ -21,6 +21,9 @@ interface IFilters{
 })
 export class MunicipalitiesComponent implements OnInit {
 
+  @ViewChild(GenericTableComponent)
+  private municipalitiesTable: GenericTableComponent<any, CustomRowComponent>;
+
   states: string[] = ["Actif", "Inactif"];
   cantons: Canton[] = [];
   districts: District[] = [];
@@ -142,9 +145,6 @@ export class MunicipalitiesComponent implements OnInit {
     this.loading = false;
   }
 
-  @ViewChild(GenericTableComponent)
-  private municipalitiesTable: GenericTableComponent<any, CustomRowComponent>;
-
   onChangeFilter(cantonName:string, districtName: string, state: string){
     console.log(cantonName + " " + districtName + " " + state);
     let filters: IFilters = {};
@@ -170,42 +170,4 @@ export class MunicipalitiesComponent implements OnInit {
     console.log(filters);
     this.municipalitiesTable.gtApplyFilter(filters);
   }
-
-/*  onChangeCanton(cantonName: string){
-    if(cantonName == "Tous les cantons") {
-      this.districts = [];
-      this.disableDistricts = true;
-      this.municipalitiesTable.gtApplyFilter({});
-    }
-    else {
-      let current: Canton = this.cantons.find(x => x.name == cantonName);
-      this.districts = current.districts;
-      this.disableDistricts = false;
-      this.municipalitiesTable.gtApplyFilter({canton: cantonName});
-    }
-  }
-
-  onChangeDistrict(districtName: string, cantonName: string){
-    if(districtName == "Tous les districts") {
-      this.municipalitiesTable.gtApplyFilter({});
-    }
-    else {
-      this.municipalitiesTable.gtApplyFilter({canton: cantonName,district: districtName});
-    }
-  }
-
-  onChangeState(state: string){
-    if(state == "Tous les statuts") {
-      this.municipalitiesTable.gtApplyFilter({});
-    }
-    else {
-      this.municipalitiesTable.gtApplyFilter({state: state});
-    }
-  }*/
-
-/*  isActiveCheck: boolean = false;
-
-  activeCheck(){
-    this.municipalitiesTable.gtApplyFilter({active: this.isActiveCheck.toString().toLowerCase()})
-  }*/
 }

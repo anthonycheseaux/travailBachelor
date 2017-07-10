@@ -5,13 +5,15 @@ import {Canton} from "../objects/canton";
 import {District} from "../objects/district";
 import {MunicipalityVersion} from "../objects/municipality-version";
 import {Mutation} from "../objects/mutation";
-import {ActivatedRouteSnapshot, RouterStateSnapshot} from "@angular/router";
 import {Observable} from "rxjs";
 
-const endpointUrl  = 'https://lindasdev.netrics.ch:8443/lindas/query?query=';
+const endpointUrl  = 'https://test.lindas-data.ch:8443/lindas/query?query=';
 
 @Injectable()
 export class MunicipalitiesService {
+  private municipalities: MunicipalityVersion[];
+  private observable: Observable<any>;
+
   constructor(private http: Http) {}
 
   private getHeaders(){
@@ -25,8 +27,29 @@ export class MunicipalitiesService {
     return headers;
   }
 
-  getHistory(uris: string){
-    let query:string = '';
+  /*getHistory(uris: string){
+    let query:string = 'SELECT ?version ?id ?name ?cantonName ?districtName ?adDate ?adLabel ?abDate ?abLabel ' +
+      'FROM  <https://linked.opendata.swiss/graph/eCH-0071> ' +
+      'WHERE { ' +
+    'VALUES ?version {'+ uris +'} ' +
+      '?version a gont:MunicipalityVersion; ' +
+      'gont:id ?id; ' +
+      'gont:longName ?name; ' +
+      ' gont:canton ?c; ' +
+      'gont:district ?d; ' +
+      'gont:admissionEvent ?adEvent; ' +
+    'gont:admissionMode ?adMode. ' +
+    '?c gont:longName ?cantonName. ' +
+    '?d gont:longName ?districtName. ' +
+    '?adEvent gont:date ?adDate. ' +
+      '?adMode skos:prefLabel ?adLabel. ' +
+    'OPTIONAL{ ' +
+      '?version gont:abolitionEvent ?abEvent; ' +
+    'gont:abolitionMode ?abMode. ' +
+    '?abEvent gont:date ?abDate. ' +
+      '?abMode skos:prefLabel ?abLabel. ' +
+      '} ' +
+      '}';
 
     let getUrl = endpointUrl+encodeURIComponent(query);
 
@@ -45,7 +68,7 @@ export class MunicipalitiesService {
           return elements;
         }
       );
-  }
+  }*/
 
   getRelatedMunicipalities(id: number){
     let query:string = 'SELECT distinct ?otherVersion ?otherVersionLabel ' +
@@ -92,92 +115,106 @@ export class MunicipalitiesService {
 
   getAllMunicipalities() {
 
-    let query:string =
-      'PREFIX gont: <https://gont.ch/>' +
-      'SELECT ?version ?id ?name ?municipalityId ?cantonName ?districtName ?adEvent ?adId ?adDate ?adLabel ?abEvent ?abId ?abDate ?abLabel ' +
-      'FROM <https://linked.opendata.swiss/graph/eCH-0071> ' +
-      'WHERE { ' +
-      '?municipality a gont:PoliticalMunicipality; ' +
-      'gont:id ?municipalityId. ' +
-      '?version a gont:MunicipalityVersion; ' +
-      'gont:municipality ?municipality ; ' +
-      'gont:longName ?name; ' +
-      'gont:id ?id; ' +
-      'gont:canton ?canton; ' +
-      'gont:district ?d; ' +
-      'gont:admissionEvent ?adEvent; ' +
-      'gont:admissionMode ?adMode. ' +
-      '?canton gont:longName ?cantonName. ' +
-      '?d gont:longName ?districtName. ' +
-      '?adEvent gont:date ?adDate; ' +
-      'gont:id ?adId. ' +
-      '?adMode skos:notation ?adLabel. ' +
-      'OPTIONAL{ ' +
-      '?version gont:abolitionEvent ?abEvent. ' +
-      '?version gont:abolitionMode ?abMode. ' +
-      '?abEvent gont:date ?abDate; ' +
-      'gont:id ?abId. ' +
-      '?abMode skos:notation ?abLabel. ' +
-      '} ' +
-      '} ' +
-      'ORDER BY ASC (?name) DESC (?adDate)';
+    if(this.municipalities){
+      return Observable.of(this.municipalities);
+    }
+    else if(this.observable) {
+      //pending request
+      return this.observable;
+    }else {
+      //new request
+      let query:string =
+        'PREFIX gont: <https://gont.ch/>' +
+        'SELECT ?version ?id ?name ?municipalityId ?cantonName ?districtName ?adEvent ?adId ?adDate ?adLabel ?abEvent ?abId ?abDate ?abLabel ' +
+        'FROM <https://linked.opendata.swiss/graph/eCH-0071> ' +
+        'WHERE { ' +
+        '?municipality a gont:PoliticalMunicipality; ' +
+        'gont:id ?municipalityId. ' +
+        '?version a gont:MunicipalityVersion; ' +
+        'gont:municipality ?municipality ; ' +
+        'gont:longName ?name; ' +
+        'gont:id ?id; ' +
+        'gont:canton ?canton; ' +
+        'gont:district ?d; ' +
+        'gont:admissionEvent ?adEvent; ' +
+        'gont:admissionMode ?adMode. ' +
+        '?canton gont:longName ?cantonName. ' +
+        '?d gont:longName ?districtName. ' +
+        '?adEvent gont:date ?adDate; ' +
+        'gont:id ?adId. ' +
+        '?adMode skos:notation ?adLabel. ' +
+        'OPTIONAL{ ' +
+        '?version gont:abolitionEvent ?abEvent. ' +
+        '?version gont:abolitionMode ?abMode. ' +
+        '?abEvent gont:date ?abDate; ' +
+        'gont:id ?abId. ' +
+        '?abMode skos:notation ?abLabel. ' +
+        '} ' +
+        '} ' +
+        'ORDER BY ASC (?name) DESC (?adDate)';
 
-    let getUrl = endpointUrl+encodeURIComponent(query);
+      let getUrl = endpointUrl+encodeURIComponent(query);
 
-    return this.http.get(getUrl, {headers: this.getHeaders()})
-      .map(
-        (response: Response) => {
-          let data = response.json().results.bindings;
-          let elements: MunicipalityVersion[] = [];
+      this.observable = this.http.get(getUrl, {headers: this.getHeaders()})
+        .map(
+          (response: Response) => {
+            this.observable = null;
 
-          //console.log(data);
+            let data = response.json().results.bindings;
+            let elements: MunicipalityVersion[] = [];
 
-          let abolitionMutation: Mutation;
-          let admissionMutation: Mutation;
-          let currentVersion: MunicipalityVersion;
-          let state: number = -1;
+            //console.log(data);
 
-          for(const e of data){
-            if(e.hasOwnProperty('abEvent')){
-              state = 1;
-              abolitionMutation = new Mutation(
-                e.abId.value,
-                e.abEvent.value,
-                e.abDate.value,
-                +e.abLabel.value
+            let abolitionMutation: Mutation;
+            let admissionMutation: Mutation;
+            let currentVersion: MunicipalityVersion;
+            let state: number = -1;
+
+            for(const e of data){
+              if(e.hasOwnProperty('abEvent')){
+                state = 1;
+                abolitionMutation = new Mutation(
+                  e.abId.value,
+                  e.abEvent.value,
+                  e.abDate.value,
+                  +e.abLabel.value
+                );
+              }
+              else {
+                abolitionMutation = null;
+                state = 0;
+              }
+
+              admissionMutation = new Mutation(
+                e.adId.value,
+                e.adEvent.value,
+                e.adDate.value,
+                +e.adLabel.value
               );
+
+              elements.push(new MunicipalityVersion(
+                e.id.value,
+                e.version.value,
+                e.name.value,
+                e.municipalityId.value,
+                state,
+                e.cantonName.value,
+                e.districtName.value,
+                admissionMutation,
+                abolitionMutation
+              ));
+
+              state = -1;
             }
-            else {
-              abolitionMutation = null;
-              state = 0;
-            }
 
-            admissionMutation = new Mutation(
-              e.adId.value,
-              e.adEvent.value,
-              e.adDate.value,
-              +e.adLabel.value
-            );
+            //console.log(elements);
+            this.municipalities = elements;
 
-            elements.push(new MunicipalityVersion(
-              e.id.value,
-              e.version.value,
-              e.name.value,
-              e.municipalityId.value,
-              state,
-              e.cantonName.value,
-              e.districtName.value,
-              admissionMutation,
-              abolitionMutation
-            ));
-
-            state = -1;
+            return this.municipalities;
           }
-
-          //console.log(elements);
-          return elements;
-        }
-      );
+        ).share();
+      return this.observable;
+    }
   }
 
   getActiveMunicipalities() {
