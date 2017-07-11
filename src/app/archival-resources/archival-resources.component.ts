@@ -1,56 +1,89 @@
-import {Component, OnInit, Input} from '@angular/core';
+import {Component, OnInit, Input, OnDestroy, ViewChild} from '@angular/core';
 import {ArchivalResourcesService} from "./archival-resources.service";
 import {MunicipalitiesService} from "../municipalities/municipalities.service";
 import {MunicipalityVersion} from "../objects/municipality-version";
 import {Router, ActivatedRoute, Data, Params} from "@angular/router";
 import {ArchivalResources} from "../objects/archival-resources";
 import { DomSanitizer } from '@angular/platform-browser';
+import {GenericTableComponent, GtConfig} from "@angular-generic-table/core";
+import {CustomRowComponent} from "../custom-row/custom-row.component";
+import {Subscription} from "rxjs";
+
+const swissArchiveURL: string = 'https://www.swiss-archives.ch/detail.aspx?id=';
 
 @Component({
   selector: 'app-archival-resources',
   templateUrl: './archival-resources.component.html',
   styleUrls: ['./archival-resources.component.css']
 })
-export class ArchivalResourcesComponent implements OnInit {
+export class ArchivalResourcesComponent implements OnInit, OnDestroy {
 
-  mapUrl = '//map.geo.admin.ch/?zoom=5&?ch.swisstopo.swissboundaries3d-gemeinde-flaeche.fill=';
+  @ViewChild(GenericTableComponent)
+  private archivalResourcesTable: GenericTableComponent<any, CustomRowComponent>;
+
   loading: boolean;
   options: MunicipalityVersion[];
   versionId: number;
-  currentMunicipalityVersion: MunicipalityVersion = new MunicipalityVersion(0, '', '', 0, -1, '', '', null, null);
-  municipalities: MunicipalityVersion[];
+  currentMunicipalityVersion: MunicipalityVersion;
   archivalResources: ArchivalResources[];
   related: MunicipalityVersion[];
+  active: MunicipalityVersion;
+
+  //Map
   mapActive = false;
+  mapUrl = '//map.geo.admin.ch/?ch.swisstopo.swissboundaries3d-gemeinde-flaeche.fill=';
+
+  //List
+  configObject: GtConfig<any>;
+  settings = [];
+  fields = [];
+
+  //Subscriptions
+  getAllMunicipalitiesSubscription: Subscription;
+  getArchivalResourcesMatchingNamesSubscription: Subscription;
+  routeSubscription: Subscription;
 
   constructor(public sanitizer: DomSanitizer,
-              private router: Router,
               private route: ActivatedRoute,
               private archivalResourcesService: ArchivalResourcesService,
-              private municipalitiesService: MunicipalitiesService) { }
+              private municipalitiesService: MunicipalitiesService) {
+    this.settings = this.constructListSettings();
+    this.fields = this.constructListFields();
+    this.configObject = null;
+  }
 
   ngOnInit() {
     this.loading = true;
 
-    this.municipalitiesService.getAllMunicipalities().subscribe(
-      (elements: any[]) => this.options = elements,
-      (error) => console.log(error),
-      () => {
-        this.route.params.subscribe(
-          (params: Params) => {
-            this.versionId = params['id'];
+    this.getAllMunicipalitiesSubscription =
+      this.municipalitiesService.getAllMunicipalities().subscribe(
+        (elements: any[]) => this.options = elements,
+        (error) => console.log(error),
+        () => {
+          this.routeSubscription =
+            this.route.params.subscribe(
+              (params: Params) => {
 
-            this.currentMunicipalityVersion = this.options.find(x => x.id == this.versionId);
+                this.versionId = params['id'];
 
-            this.related = this.testGetRelated(this.currentMunicipalityVersion);
+                this.currentMunicipalityVersion = this.options.find(x => x.id == this.versionId);
 
-            this.afterLoadRelated(this.related);
+                this.related = this.getRelatedVersions(this.currentMunicipalityVersion);
+                console.log(this.related);
 
-            //this.getRelatedMunicipalities(this.versionId);
-          }
-        );
-      }
-    );
+                this.active = this.getActive(this.currentMunicipalityVersion);
+                //Active Municipality for the map
+                this.mapUrl = this.mapUrl + this.active.municipality;
+                this.mapActive = true;
+
+                this.constructHistory(this.related);
+
+                //this.afterLoadRelated(this.related);
+                this.loading = false;
+              }
+            );
+        }
+      );
 
     /*this.route.params.subscribe(
      (params: Params) => {
@@ -60,27 +93,111 @@ export class ArchivalResourcesComponent implements OnInit {
      );*/
   }
 
+  ngOnDestroy() {
+    if(this.getAllMunicipalitiesSubscription)
+      this.getAllMunicipalitiesSubscription.unsubscribe();
+    if(this.routeSubscription)
+      this.routeSubscription.unsubscribe();
+    if(this.getArchivalResourcesMatchingNamesSubscription)
+      this.getArchivalResourcesMatchingNamesSubscription.unsubscribe();
+  }
 
-  private testGetRelated(current: MunicipalityVersion){
+  private afterLoadRelated(related: MunicipalityVersion[]): void {
+
+
+    /*
+
+    this.archivalResourcesService
+      .getArchivalResourcesMatchingNames(this.constructNamesString(related))
+      .subscribe(
+        (elements: any[]) => this.archivalResources = elements,
+        (error) => {
+          console.log(error);
+          this.configObject = {
+            settings: this.settings,
+            fields: this.fields,
+            data: [null]
+          };
+          this.loading = false;
+        },
+        () => {
+          this.configObject = {settings: this.settings, fields: this.fields, data: this.options};
+          this.loading = false;
+        }
+      );*/
+  }
+
+  private constructHistory(related: MunicipalityVersion[]) {
+    let history: string[] = [];
+    let work: MunicipalityVersion[] = [];
+
+    history.push("Version sélectionnée "  + this.currentMunicipalityVersion.name);
+    if(this.currentMunicipalityVersion != this.active){
+      history.push('Version active: ' + this.active.name);
+    }
+
+    work.push(this.currentMunicipalityVersion);
+
+    if (related.length != 0) {
+      for (let m of related) {
+        if (m.name == this.currentMunicipalityVersion.name) {
+          work.push(m);
+        }
+      }
+    }
+
+    for (let w of work) {
+      for (let r of related) {
+        if (r.abolitionMutation && w.name != r.name && w.admissionMutation.id == r.abolitionMutation.id) {
+          history.push(r.name + " " + w.admissionMutation.date + " " + w.admissionMutation.mutationLabel);
+        }
+        if (w.abolitionMutation && w.name != r.name && w.abolitionMutation.id == r.admissionMutation.id) {
+          history.push(r.name + " " + r.admissionMutation.date + " " + r.admissionMutation.mutationLabel);
+        }
+      }
+    }
+
+    for (let h of history) {
+      console.log(h);
+    }
+  }
+
+  private constructNamesString(relatedVersions: MunicipalityVersion[]): string{
+    let names: string = '';
+
+    names = names + "\"" + this.currentMunicipalityVersion.name + "\"";
+
+    if(relatedVersions.length > 0){
+      for (let version of relatedVersions) {
+        if (names.indexOf(version.name) == -1) {
+          names = names + " OR " + "\"" + version.name + "\"";
+        }
+      }
+    }
+
+    return names;
+  }
+
+  private getRelatedVersions(current: MunicipalityVersion): MunicipalityVersion[] {
     let sameM: MunicipalityVersion[] = [];
 
-    for(const option of this.options){
-      if(current.municipality == option.municipality){
+    for (const option of this.options) {
+      if (current.municipality == option.municipality) {
         sameM.push(option);
       }
     }
 
     let related: MunicipalityVersion[] = [];
 
-    for(const same of sameM){
-      for(const option of this.options){
-        if(same.abolitionMutation){
-          if(same.abolitionMutation.id == option.admissionMutation.id){
+    for (const same of sameM) {
+      for (const option of this.options) {
+        if (same.abolitionMutation) {
+          if (same.abolitionMutation.id == option.admissionMutation.id) {
             related.push(option);
           }
         }
-        if(option.abolitionMutation){
-          if(related.indexOf(option) == -1) {
+        if (option.abolitionMutation) {
+          if (related.indexOf(option) == -1) {
             if (same.admissionMutation.id == option.abolitionMutation.id) {
               related.push(option);
             }
@@ -91,87 +208,122 @@ export class ArchivalResourcesComponent implements OnInit {
     return related;
   }
 
-  /*  private getRelatedMunicipalities(id: number){
-   this.municipalitiesService.getRelatedMunicipalities(id).subscribe(
-   (related: any[]) => this.afterLoadRelated(related),
-   (error) => console.log(error)
-   );
-   }*/
-
-  private afterLoadRelated(related: MunicipalityVersion[]){
-    let names: string = '';
-
-    this.constructHistory(related);
-
-    for(const element of related){
-      if(names.indexOf(element.name) == -1){
-        names = names + "\"" + element.name + "\"" + " OR ";
-      }
-    }
-    names = names.substring(0, names.length-4);
-
-    this.loading = false;
-
-    /*    this.archivalResourcesService.getArchivalResourcesMatchingNames(names).subscribe(
-     (elements: any[]) => this.archivalResources = elements,
-     (error) => console.log(error)
-     );*/
-  }
-
-  private constructHistory(related: MunicipalityVersion[]){
-    let history: string[] = [];
-    let work: MunicipalityVersion[] = [];
+  private getActive(currentVersion: MunicipalityVersion): MunicipalityVersion {
     let active: MunicipalityVersion = null;
+    let relatedVersions: MunicipalityVersion[];
 
-    console.log(related);
+    //Test if current is an active version
+    if(!currentVersion.abolitionMutation){
+      return currentVersion;
+    }
 
-    for(let m of related){
-      if(!m.abolitionMutation){
-        active = m;
-      }
+    //Get related versions of current
+    relatedVersions = this.getRelatedVersions(currentVersion);
 
-      if(m.name == this.currentMunicipalityVersion.name){
-        work.push(m);
+    //Search active version
+    for (let version of relatedVersions) {
+      if (!version.abolitionMutation) {
+        active = version;
       }
     }
 
-    if(active){
-      history.push("Nom actuel (commune active) " + active.name);
-      this.mapUrl = this.mapUrl + active.municipality;
-      this.mapActive = true;
-    }
-    else{
-      related.sort((a: any, b: any) => {
-        if (a.abolitionMutation.date < b.abolitionMutation.date) {
+    if(active)
+      return active;
+
+    if(relatedVersions.length > 1){
+      //Sort the table, first element is most recent
+      relatedVersions.sort((a: any, b: any) => {
+        if (a.abolitionMutation.date > b.abolitionMutation.date) {
           return -1;
         }
-        else if (a.abolitionMutation.date > b.abolitionMutation.date) {
+        else if (a.abolitionMutation.date < b.abolitionMutation.date) {
           return 1;
         }
         else {
           return 0;
         }
       });
-
-      this.mapUrl = this.mapUrl + related[related.length-1].municipality;
-      this.mapActive = true;
     }
 
-    work.push(this.currentMunicipalityVersion);
+    //Launch get active with most recent related version
+    return this.getActive(relatedVersions[0]);
+  }
 
-    for(let w of work){
-      for(let r of related){
-        if(r.abolitionMutation && w.name != r.name && w.admissionMutation.id == r.abolitionMutation.id){
-          history.push(r.name + " " + w.admissionMutation.date + " " + w.admissionMutation.mutationLabel);
+  private constructListSettings(): any[]{
+    return [{
+      objectKey:'id',
+      sort:'disable',
+      visible:false,
+      columnOrder:0,
+      search: false
+    },{
+      objectKey:'signature',
+      sort:'enable',
+      columnOrder:1,
+      search: true
+    },{
+      objectKey:'titre',
+      sort:'enable',
+      columnOrder:2,
+      search: false
+    },{
+      objectKey:'startDate',
+      sort:'enable',
+      columnOrder:3,
+      search: false
+    },{
+      objectKey: 'endDate',
+      sort: 'disable',
+      columnOrder: 4,
+      search: false
+    },{
+      objectKey: 'abolitionLabel',
+      sort: 'disable',
+      visible: true,
+      columnOrder: 5,
+      search: false
+    },{
+      objectKey: 'swissArchiveButton',
+      columnOrder: 6,
+      sort: 'disable',
+      search: false
+    }];
+  }
+
+  private constructListFields(): any[]{
+    return [{
+      name:'Signature',
+      objectKey:'signature',
+      classNames: 'sort-string'
+    },{
+      name:'Titre',
+      objectKey:'title',
+      classNames: 'sort-string'
+    },{
+      name:'Date de début',
+      objectKey:'startDate',
+      classNames: 'sort-string',
+      value: function(row){
+        if(row.startDate){
+          return row.startDate;
         }
-        if(w.abolitionMutation && w.name != r.name && w.abolitionMutation.id == r.admissionMutation.id){
-          history.push(r.name + " " + r.admissionMutation.date + " " + r.admissionMutation.mutationLabel);
-        }
+        return '';
       }
-    }
-
-    for(let h of history){
-      console.log(h);
-    }
+    },{
+      name:'Date de fin',
+      objectKey:'endDate',
+      classNames: 'clickable sort-numeric',
+      value: function(row){
+        if(row.endDate){
+          return row.endDate;
+        }
+        return '';
+      }
+    },{
+      objectKey: 'swissArchiveButton', name: '',
+      value: () => '',
+      render: () => ' <a class="btn btn-primary"> Swiss Archive </button>',
+      click: (row) => window.open(swissArchiveURL+row.id, "_blank")
+    }];
   }
 }

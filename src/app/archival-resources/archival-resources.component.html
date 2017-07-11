@@ -19,10 +19,10 @@
         <div class="panel panel-primary">
           <div class="panel-heading">
             <h4 class="panel-title">
-              <a data-toggle="collapse" href="#collapse2" class="toggle">Histoire</a>
+              <a data-toggle="collapse" href="#collapseHistory" class="toggle">Histoire</a>
             </h4>
           </div>
-          <div id="collapse2" class="panel-collapse collapse in">
+          <div id="collapseHistory" class="panel-collapse collapse in">
             <div class="panel-body">
               <div >
                 <!--  <table *ngIf="related">
@@ -51,10 +51,10 @@
         <div class="panel panel-primary">
           <div class="panel-heading">
             <h4 class="panel-title">
-              <a data-toggle="collapse" href="#collapse1" class="toggle">Carte</a>
+              <a data-toggle="collapse" href="#collapseMap" class="toggle">Carte</a>
             </h4>
           </div>
-          <div id="collapse1" class="panel-collapse collapse in">
+          <div id="collapseMap" class="panel-collapse collapse in">
             <div class="panel-body">
               <div >
                 <iframe
@@ -73,6 +73,68 @@
 
 
     </div>
+
+  </div><!--row-->
+  <div class="row">
+
+    <!--<div id="filters" class="col-md-3">
+      <div class="panel-group">
+        <div class="panel panel-primary">
+          <div class="panel-heading">
+            <h4 class="panel-title">
+              <a data-toggle="collapse" href="#collapseFilters" class="toggle">Filtres</a>
+            </h4>
+          </div>
+          <div id="collapseFilters" class="panel-collapse collapse in">
+            <div class="panel-body">
+              <form #filterForm class="form-horizontal">
+
+              </form>
+            </div>
+            &lt;!&ndash;<div class="panel-footer"></div>&ndash;&gt;
+          </div>
+        </div>
+      </div>
+      <div class="row"><div class="col-md-12"><br></div></div>
+    </div>
+
+    <div id="result-table" class="col-md-9">
+
+      <div class="row">
+        <div class="col-md-7">
+          <gt-table-info
+            class="form-text text-muted mb-2"
+            [genericTable]="archivalResourcesTable"></gt-table-info>
+        </div>
+        <div class="col-md-3 col-md-offset-2 text-right">
+          <select
+            id="rows"
+            #rowLength
+            (change)="archivalResourcesTable.changeRowLength(rowLength.value)"
+            style="width: 50px">
+            <option value="10">10</option>
+            <option value="25">25</option>
+            <option value="50">50</option>
+            <option value="100">100</option>
+          </select>
+
+          par page
+        </div>
+      </div>
+
+      <generic-table
+        [gtSettings]="configObject.settings"
+        [gtFields]="configObject.fields"
+        [gtData]="configObject.data"
+        #archivalResourcesTable
+        [gtOptions]="{highlightSearch:true}"></generic-table>
+
+      <div class="text-center">
+        <gt-pagination
+          [gtClasses]="'pagination-sm justify-content-center'"
+          [genericTable]="archivalResourcesTable"></gt-pagination>
+      </div>
+    </div>-->
 
   </div><!--row-->
 </div><!--loaded-->

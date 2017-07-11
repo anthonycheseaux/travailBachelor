@@ -2,7 +2,6 @@ import { BrowserModule } from '@angular/platform-browser';
 import { NgModule } from '@angular/core';
 
 import { AppComponent } from './app.component';
-import { MapComponent } from './map/map.component';
 import { HomeComponent } from './home/home.component';
 import { ErrorPageComponent } from './error-page/error-page.component';
 import { PageNotFoundComponent } from './page-not-found/page-not-found.component';
@@ -24,7 +23,6 @@ import {ArraySortPipe} from "./archival-resources/array-sort-pipe";
 @NgModule({
   declarations: [
     AppComponent,
-    MapComponent,
     HomeComponent,
     ErrorPageComponent,
     PageNotFoundComponent,
