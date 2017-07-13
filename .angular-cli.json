@@ -22,6 +22,7 @@
         "styles.css",
         "theme.scss",
         "../node_modules/bootswatch/paper/bootstrap.min.css",
+        "../node_modules/bootstrap/fonts/glyphicons-halflings-regular.eot",
         "../node_modules/@angular-generic-table/core/css/generic-table.min.css",
         "../node_modules/@angular-generic-table/column-settings/css/column-settings.min.css"
       ],

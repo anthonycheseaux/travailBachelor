@@ -17,11 +17,17 @@ export class HomeComponent implements OnInit {
   message: string = 'Erreur';
 
   ngOnInit() {
-    this.municipalitiesService.getActiveMunicipalities()
+    this.municipalitiesService.getAllMunicipalities()
       .subscribe(
-        (elements: any[]) => this.municipalities = elements,
+        (elements: any[]) => {
+          for(let element of elements){
+            if(!element.abolitionMutation){
+              this.municipalities.push(element);
+            }
+          }
+        },
         (error) => console.log(error),
-        () => this.init()
+        () => this.tdMunicipalities = this.municipalities
       );
   }
 
@@ -32,14 +38,7 @@ export class HomeComponent implements OnInit {
       : this.municipalities;
   }
 
-  init() {
-    this.tdMunicipalities = this.municipalities;
-  }
-
   onClick(current: string) {
-
-    console.log(current);
-
     for(let m of this.municipalities){
       if(m.name.toUpperCase() == current.trim().toUpperCase()) {
         this.router.navigate(['/municipalities/', m.id, 'archival-resources']);

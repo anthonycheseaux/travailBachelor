@@ -18,7 +18,6 @@ import {ColumnSettingsModule} from "@angular-generic-table/column-settings";
 import {CustomRowComponent } from './custom-row/custom-row.component';
 import { AboutComponent } from './about/about.component';
 import {ArchivalResourcesService} from "./archival-resources/archival-resources.service";
-import {ArraySortPipe} from "./archival-resources/array-sort-pipe";
 
 @NgModule({
   declarations: [
@@ -29,8 +28,7 @@ import {ArraySortPipe} from "./archival-resources/array-sort-pipe";
     MunicipalitiesComponent,
     ArchivalResourcesComponent,
     CustomRowComponent,
-    AboutComponent,
-    ArraySortPipe
+    AboutComponent
   ],
   imports: [
     BrowserModule,

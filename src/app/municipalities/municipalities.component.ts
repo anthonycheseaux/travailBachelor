@@ -160,7 +160,7 @@ export class MunicipalitiesComponent implements OnInit, OnDestroy {
     },{
       objectKey: 'UDButton', name: '',
       value: () => '',
-      render: () => ' <a class="btn btn-primary"> Voir les UD </button>',
+      render: () => ' <a class="btn btn-primary"> Voir les UD </a>',
       click: (row) => this.router.navigate(['/municipalities/', row.id, 'archival-resources'])
     }];
   }

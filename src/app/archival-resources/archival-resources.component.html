@@ -25,15 +25,44 @@
           <div id="collapseHistory" class="panel-collapse collapse in">
             <div class="panel-body">
               <div >
-                <!--  <table *ngIf="related">
-      <tr *ngFor="let elem of related | municipalityVersionSort">
-        <td>{{ elem.name }}</td>
-        <td>{{ elem.admissionMutation.date }}</td>
-        <td>{{ elem.admissionMutation.mutationLabel }}</td>
-        <td>{{ elem.abolitionMutation ? elem.abolitionMutation.date : '' }}</td>
-        <td>{{ elem.abolitionMutation ? elem.abolitionMutation.mutationLabel : '' }}</td>
-      </tr>
-    </table>-->
+                <p>Statut : {{currentMunicipalityVersion.state}}</p>
+                <p>
+                  Admission :
+                  {{currentMunicipalityVersion.admissionMutation.date }}
+                  {{currentMunicipalityVersion.admissionMutation.mutationLabel}}
+                </p>
+                <p *ngIf="currentMunicipalityVersion.id != active.id">
+                  Radiation :
+                  {{currentMunicipalityVersion.abolitionMutation ? currentMunicipalityVersion.abolitionMutation.date : ''}}
+                  {{currentMunicipalityVersion.abolitionMutation ? currentMunicipalityVersion.abolitionMutation.mutationLabel : ''}}
+                </p>
+                <hr>
+                <table class="table-striped table-responsive" *ngIf="history">
+                  <tr *ngIf="active.id != currentMunicipalityVersion.id">
+                    <td>{{active.name}}</td>
+                    <td>Commune active</td>
+                    <td>depuis le {{active.admissionMutation.date}}</td>
+                    <td>
+                      <a
+                        class="btn btn-primary"
+                        (click)="router.navigate(['/municipalities/', active.id, 'archival-resources'])">
+                        Voir les UD
+                      </a>
+                    </td>
+                  </tr>
+                  <tr *ngFor="let element of history">
+                    <td>{{ element.name }}</td>
+                    <td>{{ element.date }}</td>
+                    <td>{{ element.mutation }}</td>
+                    <td>
+                      <a
+                        class="btn btn-primary"
+                        (click)="router.navigate(['/municipalities/', element.id, 'archival-resources'])">
+                        Voir les UD
+                      </a>
+                    </td>
+                  </tr>
+                </table>
               </div>
             </div>
             <!--<div class="panel-footer"></div>-->
@@ -77,7 +106,7 @@
   </div><!--row-->
   <div class="row">
 
-    <!--<div id="filters" class="col-md-3">
+    <div id="filters" class="col-md-3">
       <div class="panel-group">
         <div class="panel panel-primary">
           <div class="panel-heading">
@@ -88,17 +117,65 @@
           <div id="collapseFilters" class="panel-collapse collapse in">
             <div class="panel-body">
               <form #filterForm class="form-horizontal">
+                <label class="control-label">Histoire</label>
+                <div
+                  class="checkbox"
+                  *ngFor="let element of historyCheckBoxField">
+                  <label><input type="checkbox" value="element.name" checked> {{element}}</label>
+                </div>
 
+                <hr>
+
+                <label class="control-label">Période</label>
+                <div class="input-group">
+                  <select
+                    id="period-start"
+                    class="form-control"
+                    #periodStart>
+                    <!--(change)="onChangeFilter(cantonName.value, districtName.value, stateName.value)"-->
+                    <option>Début</option>
+                    <option>Sans date</option>
+                    <option
+                      *ngFor="let year of startPeriod"
+                      [ngValue]="year">
+                      {{year}}</option>
+                  </select>
+                  <span class="input-group-addon">-</span>
+                  <select
+                    id="period-end"
+                    class="form-control"
+                    #periodEnd>
+                    <!--(change)="onChangeFilter(cantonName.value, districtName.value, stateName.value)" -->
+                    <option>Fin</option>
+                    <option>Sans date</option>
+                    <option
+                      *ngFor="let year of endPeriod"
+                      [ngValue]="year">
+                      {{year}}</option>
+                  </select>
+                </div>
+
+                <hr>
+
+                <div align="center">
+                  <a class="btn btn-info">
+                     <!--(click)="filterForm.reset();
+                     municipalitiesTable.gtClearFilter();
+                     onChangeFilter(cantonName.value, districtName.value, stateName.value);
+                     municipalitiesTable.gtSearch(search.value);">-->
+                    Réinitialitiser les filtres
+                  </a>
+                </div>
               </form>
             </div>
-            &lt;!&ndash;<div class="panel-footer"></div>&ndash;&gt;
+            <!--<div class="panel-footer"></div>-->
           </div>
         </div>
       </div>
       <div class="row"><div class="col-md-12"><br></div></div>
     </div>
 
-    <div id="result-table" class="col-md-9">
+    <!--<div id="result-table" class="col-md-9">
 
       <div class="row">
         <div class="col-md-7">
@@ -138,3 +215,5 @@
 
   </div><!--row-->
 </div><!--loaded-->
+
+
