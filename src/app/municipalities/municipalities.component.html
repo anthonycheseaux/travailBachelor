@@ -23,6 +23,11 @@
               <form #filterForm class="form-horizontal">
 
                 <label class="control-label">Rechercher dans la liste</label>
+                <span
+                  mdTooltipPosition="above"
+                  mdTooltip="La recherche s'effectue uniquement parmi les noms de communes">
+                  <i class="glyphicon glyphicon-question-sign small"></i>
+                </span>
                 <input
                   class="form-control"
                   #search
@@ -47,6 +52,11 @@
                 <hr>
 
                 <label class="control-label" for="district">Districts</label>
+                <span
+                  mdTooltipPosition="above"
+                  mdTooltip="Il est nécessaire de sélection un canton pour visualiser l'ensemble de ses districts">
+                  <i class="glyphicon glyphicon-question-sign small"></i>
+                </span>
                 <select
                   id="district"
                   class="form-control"
@@ -63,6 +73,11 @@
                 <hr>
 
                 <label class="control-label" for="state">Satuts</label>
+                <span
+                  mdTooltipPosition="above"
+                  mdTooltip="Actif : Pastille verte; Inactif: Pastille rouge">
+                  <i class="glyphicon glyphicon-question-sign small"></i>
+                </span>
                 <select
                   id="state"
                   class="form-control"

@@ -1,13 +1,22 @@
-import {Component, OnInit, Input, OnDestroy, ViewChild} from '@angular/core';
+import {Component, OnInit, OnDestroy, ViewChild} from '@angular/core';
 import {ArchivalResourcesService} from "./archival-resources.service";
 import {MunicipalitiesService} from "../municipalities/municipalities.service";
 import {MunicipalityVersion} from "../objects/municipality-version";
-import {Router, ActivatedRoute, Data, Params} from "@angular/router";
+import {Router, ActivatedRoute, Params} from "@angular/router";
 import {ArchivalResources} from "../objects/archival-resources";
 import { DomSanitizer } from '@angular/platform-browser';
 import {GenericTableComponent, GtConfig} from "@angular-generic-table/core";
 import {CustomRowComponent} from "../custom-row/custom-row.component";
 import {Subscription} from "rxjs";
+
+/**
+ * Interface used to manage filters on applied on the list
+ */
+interface IFilters{
+  name?:string;
+  startDate?:number;
+  endDate?:number;
+}
 
 const swissArchiveURL: string = 'https://www.swiss-archives.ch/detail.aspx?id=';
 
@@ -32,6 +41,8 @@ export class ArchivalResourcesComponent implements OnInit, OnDestroy {
   //Period
   startPeriod: number[];
   endPeriod: number[];
+  invalidPeriod: boolean;
+  invalidPeriodMessage: string;
 
   //History
   history: any[];
@@ -52,6 +63,8 @@ export class ArchivalResourcesComponent implements OnInit, OnDestroy {
   getArchivalResourcesMatchingNamesSubscription: Subscription;
   routeSubscription: Subscription;
 
+  historyCheckBoxValues: string[];
+
   constructor(public sanitizer: DomSanitizer,
               private route: ActivatedRoute,
               private router: Router,
@@ -63,6 +76,9 @@ export class ArchivalResourcesComponent implements OnInit, OnDestroy {
 
     this.startPeriod = [];
     this.endPeriod = [];
+
+    this.invalidPeriod = false;
+    this.invalidPeriodMessage = 'La période sélectionnée n\'est pas valide !';
   }
 
   ngOnInit() {
@@ -98,10 +114,12 @@ export class ArchivalResourcesComponent implements OnInit, OnDestroy {
                 this.history = this.constructHistory(this.related);
 
                 this.historyCheckBoxField = [this.currentMunicipalityVersion.name];
+                this.historyCheckBoxValues = [this.currentMunicipalityVersion.name];
 
                 for(let element of this.related){
                   if(this.historyCheckBoxField.indexOf(element.name) == -1){
                     this.historyCheckBoxField.push(element.name);
+                    this.historyCheckBoxValues.push(element.name);
                   }
                 }
 
@@ -369,5 +387,28 @@ export class ArchivalResourcesComponent implements OnInit, OnDestroy {
       render: () => ' <a class="btn btn-primary"> Swiss Archive </button>',
       click: (row) => window.open(swissArchiveURL+row.id, "_blank")
     }];
+  }
+
+  private onChangeFilter(startDate, endDate, checkBoxHistoryValue, event){
+    let filters: IFilters = {};
+
+    this.invalidPeriod = false;
+
+    if(checkBoxHistoryValue && event.target.checked){
+      this.historyCheckBoxValues.push(checkBoxHistoryValue);
+    }
+    else if (checkBoxHistoryValue && !event.target){
+      let index = this.historyCheckBoxValues.indexOf(checkBoxHistoryValue);
+      this.historyCheckBoxValues.splice(index,1);
+    }
+
+    if(startDate != 'Début' &&
+      startDate != 'Sans date' &&
+      endDate != 'Début' &&
+      endDate != 'Sans date' &&
+      startDate > endDate){
+      this.invalidPeriod = true;
+    }
+
   }
 }

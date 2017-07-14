@@ -84,48 +84,62 @@ export class MunicipalitiesComponent implements OnInit, OnDestroy {
       columnOrder:0,
       search: false
     },{
+      objectKey: 'state',
+      sort:'disable',
+      visible: true,
+      columnOrder: 1,
+      search: false
+    },{
       objectKey:'name',
-      sort:'enable',
-      columnOrder:1,
+      sort:'asc',
+      columnOrder:2,
       search: true
     },{
       objectKey:'district',
       sort:'enable',
-      columnOrder:2,
+      columnOrder:3,
       search: false
     },{
       objectKey:'canton',
       sort:'enable',
-      columnOrder:3,
+      columnOrder:4,
       search: false
     },{
       objectKey: 'abolitionDate',
       sort: 'disable',
       visible: true,
-      columnOrder: 4,
+      columnOrder: 5,
       search: false
     },{
       objectKey: 'abolitionLabel',
       sort: 'disable',
       visible: true,
-      columnOrder: 5,
+      columnOrder: 6,
       search: false
     },{
       objectKey: 'UDButton',
-      columnOrder: 6,
-      sort: 'disable',
-      search: false
-    },{
-      objectKey: 'state',
-      sort:'enable',
-      visible: false,
       columnOrder: 7,
+      sort: 'disable',
       search: false
     }];
   }
 
   private constructListFields(): any[]{
     return [{
+      name:'',
+      objectKey:'state',
+      classNames: 'text-xs-left',
+      render: function(row){
+        let color: string;
+        if(row.state == 'Actif'){
+          color = '#80dc18';
+        }else{
+          color = '#dc4351';
+        }
+
+        return '<div style="float:left;width:15px;height:15px;border-radius:50%;background: ' + color + '"></div>';
+      }
+    },{
       name:'Nom',
       objectKey:'name',
       classNames: 'sort-string'
@@ -160,13 +174,12 @@ export class MunicipalitiesComponent implements OnInit, OnDestroy {
     },{
       objectKey: 'UDButton', name: '',
       value: () => '',
-      render: () => ' <a class="btn btn-primary"> Voir les UD </a>',
+      render: () => '<a class="btn btn-primary" style="width: 30px;height: 30px;text-align: center;padding: 6px 0;font-size: 12px;line-height: 1.42;border-radius: 15px;"><span class="glyphicon glyphicon-chevron-right"></span></a>',
       click: (row) => this.router.navigate(['/municipalities/', row.id, 'archival-resources'])
     }];
   }
 
   onChangeFilter(cantonName:string, districtName: string, state: string){
-    console.log(cantonName + " " + districtName + " " + state);
     let filters: IFilters = {};
 
     if(cantonName == "Tous les cantons"){
@@ -187,7 +200,7 @@ export class MunicipalitiesComponent implements OnInit, OnDestroy {
     if(state != "Tous les statuts"){
       filters.state = state;
     }
-    console.log(filters);
+
     this.municipalitiesTable.gtApplyFilter(filters);
   }
 }

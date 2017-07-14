@@ -5,105 +5,13 @@
 
 <div id="loaded" *ngIf="!loading">
   <h3 class="text-center">Unités de descriptions</h3>
-  <br>
+
   <h4 class="text-center">
     {{currentMunicipalityVersion ? (currentMunicipalityVersion.name | uppercase) : ''}},
     {{currentMunicipalityVersion ? currentMunicipalityVersion.canton : ''}},
     {{currentMunicipalityVersion ? currentMunicipalityVersion.district : ''}}
   </h4>
 
-  <div class="row">
-    <div id="history" class="col-md-6">
-
-      <div class="panel-group" >
-        <div class="panel panel-primary">
-          <div class="panel-heading">
-            <h4 class="panel-title">
-              <a data-toggle="collapse" href="#collapseHistory" class="toggle">Histoire</a>
-            </h4>
-          </div>
-          <div id="collapseHistory" class="panel-collapse collapse in">
-            <div class="panel-body">
-              <div >
-                <p>Statut : {{currentMunicipalityVersion.state}}</p>
-                <p>
-                  Admission :
-                  {{currentMunicipalityVersion.admissionMutation.date }}
-                  {{currentMunicipalityVersion.admissionMutation.mutationLabel}}
-                </p>
-                <p *ngIf="currentMunicipalityVersion.id != active.id">
-                  Radiation :
-                  {{currentMunicipalityVersion.abolitionMutation ? currentMunicipalityVersion.abolitionMutation.date : ''}}
-                  {{currentMunicipalityVersion.abolitionMutation ? currentMunicipalityVersion.abolitionMutation.mutationLabel : ''}}
-                </p>
-                <hr>
-                <table class="table-striped table-responsive" *ngIf="history">
-                  <tr *ngIf="active.id != currentMunicipalityVersion.id">
-                    <td>{{active.name}}</td>
-                    <td>Commune active</td>
-                    <td>depuis le {{active.admissionMutation.date}}</td>
-                    <td>
-                      <a
-                        class="btn btn-primary"
-                        (click)="router.navigate(['/municipalities/', active.id, 'archival-resources'])">
-                        Voir les UD
-                      </a>
-                    </td>
-                  </tr>
-                  <tr *ngFor="let element of history">
-                    <td>{{ element.name }}</td>
-                    <td>{{ element.date }}</td>
-                    <td>{{ element.mutation }}</td>
-                    <td>
-                      <a
-                        class="btn btn-primary"
-                        (click)="router.navigate(['/municipalities/', element.id, 'archival-resources'])">
-                        Voir les UD
-                      </a>
-                    </td>
-                  </tr>
-                </table>
-              </div>
-            </div>
-            <!--<div class="panel-footer"></div>-->
-          </div>
-        </div>
-      </div>
-      <div class="row"><div class="col-md-12"><br></div></div>
-
-
-    </div>
-
-    <div id="map" class="col-md-6" *ngIf="mapActive">
-
-      <div class="panel-group" >
-        <div class="panel panel-primary">
-          <div class="panel-heading">
-            <h4 class="panel-title">
-              <a data-toggle="collapse" href="#collapseMap" class="toggle">Carte</a>
-            </h4>
-          </div>
-          <div id="collapseMap" class="panel-collapse collapse in">
-            <div class="panel-body">
-              <div >
-                <iframe
-                  [src]='sanitizer.bypassSecurityTrustResourceUrl(mapUrl)'
-                  width="500px"
-                  height="300px"
-                  frameborder='0'
-                  style='border:0'></iframe>
-              </div>
-            </div>
-            <!--<div class="panel-footer"></div>-->
-          </div>
-        </div>
-      </div>
-      <div class="row"><div class="col-md-12"><br></div></div>
-
-
-    </div>
-
-  </div><!--row-->
   <div class="row">
 
     <div id="filters" class="col-md-3">
@@ -118,10 +26,15 @@
             <div class="panel-body">
               <form #filterForm class="form-horizontal">
                 <label class="control-label">Histoire</label>
-                <div
-                  class="checkbox"
-                  *ngFor="let element of historyCheckBoxField">
-                  <label><input type="checkbox" value="element.name" checked> {{element}}</label>
+                <div class="checkbox" *ngFor="let element of historyCheckBoxField">
+                  <label>
+                    <input
+                      type="checkbox"
+                      value="element.name"
+                      checked
+                      (change)="onChangeFilter(startDate.value, endDate.value, element, $event)">
+                     {{element}}
+                  </label>
                 </div>
 
                 <hr>
@@ -129,10 +42,10 @@
                 <label class="control-label">Période</label>
                 <div class="input-group">
                   <select
-                    id="period-start"
+                    id="start-date"
                     class="form-control"
-                    #periodStart>
-                    <!--(change)="onChangeFilter(cantonName.value, districtName.value, stateName.value)"-->
+                    #startDate
+                    (change)="onChangeFilter(startDate.value, endDate.value, element, $event)">
                     <option>Début</option>
                     <option>Sans date</option>
                     <option
@@ -142,10 +55,10 @@
                   </select>
                   <span class="input-group-addon">-</span>
                   <select
-                    id="period-end"
+                    id="end-date"
                     class="form-control"
-                    #periodEnd>
-                    <!--(change)="onChangeFilter(cantonName.value, districtName.value, stateName.value)" -->
+                    #endDate
+                    (change)="onChangeFilter(startDate.value, endDate.value, element, $event)">
                     <option>Fin</option>
                     <option>Sans date</option>
                     <option
@@ -155,14 +68,17 @@
                   </select>
                 </div>
 
+                <div *ngIf="invalidPeriod" class="text-center" style="margin: 5px">
+                  <p class="alert alert-danger">{{invalidPeriodMessage}}</p>
+                </div>
+
                 <hr>
 
                 <div align="center">
-                  <a class="btn btn-info">
-                     <!--(click)="filterForm.reset();
-                     municipalitiesTable.gtClearFilter();
-                     onChangeFilter(cantonName.value, districtName.value, stateName.value);
-                     municipalitiesTable.gtSearch(search.value);">-->
+                  <a class="btn btn-info"
+                  (click)="filterForm.reset();
+                    onChangeFilter(startDate.value, endDate.value, element, $event);">
+                    <!--municipalitiesTable.gtClearFilter();-->
                     Réinitialitiser les filtres
                   </a>
                 </div>
@@ -212,6 +128,101 @@
           [genericTable]="archivalResourcesTable"></gt-pagination>
       </div>
     </div>-->
+
+  </div><!--row-->
+
+  <div class="row">
+
+    <div id="history" class="col-md-6">
+
+      <div class="panel-group" >
+        <div class="panel panel-primary">
+          <div class="panel-heading">
+            <h4 class="panel-title">
+              <a data-toggle="collapse" href="#collapseHistory" class="toggle">Histoire</a>
+            </h4>
+          </div>
+          <div id="collapseHistory" class="panel-collapse collapse in">
+            <div class="panel-body">
+              <div >
+                <p>
+                  <b>{{currentMunicipalityVersion.name | uppercase}}</b>,
+                  {{currentMunicipalityVersion.canton}},
+                  {{currentMunicipalityVersion.district}}
+                </p>
+                <p>Statut : {{currentMunicipalityVersion.state}}</p>
+                <p>
+                  Admission :
+                  {{currentMunicipalityVersion.admissionMutation.date }}
+                  {{currentMunicipalityVersion.admissionMutation.mutationLabel}}
+                </p>
+                <p *ngIf="currentMunicipalityVersion.id != active.id">
+                  Radiation :
+                  {{currentMunicipalityVersion.abolitionMutation ? currentMunicipalityVersion.abolitionMutation.date : ''}}
+                  {{currentMunicipalityVersion.abolitionMutation ? currentMunicipalityVersion.abolitionMutation.mutationLabel : ''}}
+                </p>
+                <table class="table" *ngIf="history">
+                  <tr *ngIf="active.id != currentMunicipalityVersion.id">
+                    <td>{{active.name}}</td>
+                    <td>{{active.admissionMutation.date}}</td>
+                    <td>Commune active</td>
+                    <td>
+                      <a
+                        class="btn btn-primary btn-circle"
+                        (click)="router.navigate(['/municipalities/', active.id, 'archival-resources'])">
+                        <span class="glyphicon glyphicon-chevron-right"></span>
+                      </a>
+                    </td>
+                  </tr>
+                  <tr *ngFor="let element of history">
+                    <td>{{ element.name }} </td>
+                    <td>{{ element.date }} </td>
+                    <td>{{ element.mutation }} </td>
+                    <td>
+                      <a
+                        class="btn btn-primary btn-circle"
+                        (click)="router.navigate(['/municipalities/', element.id, 'archival-resources'])">
+                        <span class="glyphicon glyphicon-chevron-right"></span>
+                      </a>
+                    </td>
+                  </tr>
+                </table>
+              </div>
+            </div>
+            <!--<div class="panel-footer"></div>-->
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div id="map" class="col-md-6" *ngIf="mapActive">
+
+      <div class="panel-group" >
+        <div class="panel panel-primary">
+          <div class="panel-heading">
+            <h4 class="panel-title">
+              <a data-toggle="collapse" href="#collapseMap" class="toggle">Carte</a>
+            </h4>
+          </div>
+          <div id="collapseMap" class="panel-collapse collapse in">
+            <div class="panel-body">
+              <div >
+                <iframe
+                  [src]='sanitizer.bypassSecurityTrustResourceUrl(mapUrl)'
+                  width="500px"
+                  height="300px"
+                  frameborder='0'
+                  style='border:0'></iframe>
+              </div>
+            </div>
+            <!--<div class="panel-footer"></div>-->
+          </div>
+        </div>
+      </div>
+      <div class="row"><div class="col-md-12"><br></div></div>
+
+
+    </div>
 
   </div><!--row-->
 </div><!--loaded-->
