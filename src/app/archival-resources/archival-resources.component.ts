@@ -13,9 +13,9 @@ import {Subscription} from "rxjs";
  * Interface used to manage filters on applied on the list
  */
 interface IFilters{
-  name?:string;
-  startDate?:number;
-  endDate?:number;
+  title?:string[];
+  startDate?:number[];
+  endDate?:number[];
 }
 
 const swissArchiveURL: string = 'https://www.swiss-archives.ch/detail.aspx?id=';
@@ -40,7 +40,9 @@ export class ArchivalResourcesComponent implements OnInit, OnDestroy {
 
   //Period
   startPeriod: number[];
+  startPeriodFilter: number[];
   endPeriod: number[];
+  endPeriodFilter: number[];
   invalidPeriod: boolean;
   invalidPeriodMessage: string;
 
@@ -65,6 +67,8 @@ export class ArchivalResourcesComponent implements OnInit, OnDestroy {
 
   historyCheckBoxValues: string[];
 
+  archivalResourcesTemp: ArchivalResources[];
+
   constructor(public sanitizer: DomSanitizer,
               private route: ActivatedRoute,
               private router: Router,
@@ -76,20 +80,36 @@ export class ArchivalResourcesComponent implements OnInit, OnDestroy {
 
     this.startPeriod = [];
     this.endPeriod = [];
+    this.startPeriodFilter = [];
+    this.endPeriodFilter = [];
 
     this.invalidPeriod = false;
     this.invalidPeriodMessage = 'La période sélectionnée n\'est pas valide !';
-  }
-
-  ngOnInit() {
-    this.loading = true;
 
     let currentYear: number = new Date().getFullYear();
+
+    for(let i=1000; i<currentYear; i++){
+      this.startPeriodFilter.push(i);
+      this.endPeriodFilter.push(i);
+    }
 
     for(let i=1848; i<currentYear; i+=10){
       this.startPeriod.push(i);
       this.endPeriod.push(i);
     }
+
+    this.archivalResourcesTemp = [
+      new ArchivalResources(1288432, "http://data.alod.ch/bar/id/archivalresource/1288432", "Thurgau. Abwässer aus der Putzfädenfabrik & Wäscherei Ernst Ruckstuhl in Friedtal-Aawangen", "E3270A#1000/755#611*", 1930, null),
+      new ArchivalResources(3354901, "http://data.alod.ch/bar/id/archivalresource/3354901", "TG 8320001, Parz. Nr. 349 Militäranlagen Munitionsdepo Simmen - Ettenhausen", "E3360-02#2006/1#3910*", 1983	, 1983),
+      new ArchivalResources(2125911, "http://data.alod.ch/bar/id/archivalresource/2125911", "Leutnant Wolfender, Aadorf", "E5001F#1000/1851#2353*", 1950, null),
+      new ArchivalResources(2397965, "http://data.alod.ch/bar/id/archivalresource/2397965", "	Projekt-Nr. 20-133: Kanton Thurgau, Tiefbauamt, Guntershausen: Ausbau der Staatstrasse Aadorf-Guntershausen", "E7291B#1980/16#1815*", 1976, 1977)
+    ]
+  }
+
+  ngOnInit() {
+    this.loading = true;
+
+
 
     this.getAllMunicipalitiesSubscription =
       this.municipalitiesService.getAllMunicipalities().subscribe(
@@ -123,6 +143,7 @@ export class ArchivalResourcesComponent implements OnInit, OnDestroy {
                   }
                 }
 
+                this.configObject = {settings: this.settings, fields: this.fields, data: this.archivalResourcesTemp};
                 //this.afterLoadRelated(this.related);
                 this.loading = false;
               }
@@ -324,10 +345,10 @@ export class ArchivalResourcesComponent implements OnInit, OnDestroy {
       columnOrder:1,
       search: true
     },{
-      objectKey:'titre',
+      objectKey:'title',
       sort:'enable',
       columnOrder:2,
-      search: false
+      search: true
     },{
       objectKey:'startDate',
       sort:'enable',
@@ -362,7 +383,7 @@ export class ArchivalResourcesComponent implements OnInit, OnDestroy {
       objectKey:'title',
       classNames: 'sort-string'
     },{
-      name:'Date de début',
+      name:'Début',
       objectKey:'startDate',
       classNames: 'sort-string',
       value: function(row){
@@ -372,7 +393,7 @@ export class ArchivalResourcesComponent implements OnInit, OnDestroy {
         return '';
       }
     },{
-      name:'Date de fin',
+      name:'Fin',
       objectKey:'endDate',
       classNames: 'clickable sort-numeric',
       value: function(row){
@@ -382,33 +403,59 @@ export class ArchivalResourcesComponent implements OnInit, OnDestroy {
         return '';
       }
     },{
-      objectKey: 'swissArchiveButton', name: '',
+      objectKey: 'swissArchiveButton',
+      name: '',
       value: () => '',
       render: () => ' <a class="btn btn-primary"> Swiss Archive </button>',
       click: (row) => window.open(swissArchiveURL+row.id, "_blank")
     }];
   }
 
-  private onChangeFilter(startDate, endDate, checkBoxHistoryValue, event){
+  private onChangeFilter(startDate, endDate, historyName){
     let filters: IFilters = {};
 
     this.invalidPeriod = false;
 
-    if(checkBoxHistoryValue && event.target.checked){
+    if(historyName == 'Sélectionner un nom'){
+      historyName = '';
+    }
+
+    /*if(checkBoxHistoryValue && event.target.checked){
       this.historyCheckBoxValues.push(checkBoxHistoryValue);
     }
     else if (checkBoxHistoryValue && !event.target){
       let index = this.historyCheckBoxValues.indexOf(checkBoxHistoryValue);
       this.historyCheckBoxValues.splice(index,1);
     }
+    filters.title = this.historyCheckBoxValues;*/
 
-    if(startDate != 'Début' &&
-      startDate != 'Sans date' &&
-      endDate != 'Début' &&
-      endDate != 'Sans date' &&
-      startDate > endDate){
+    if(startDate != 'Début' && endDate != 'Fin' && startDate > endDate) {
       this.invalidPeriod = true;
     }
+    else{
+      if(startDate != 'Début'){
+        let startYears: number[] = [];
 
+        for(let year of this.startPeriodFilter){
+          if(year >= startDate){
+            startYears.push(year);
+          }
+        }
+        filters.startDate = startYears;
+      }
+      if(endDate != 'Fin'){
+        let endYears: number[] = [];
+
+        for(let year of this.endPeriodFilter){
+          if(year <= endDate){
+            endYears.push(year);
+          }
+        }
+        filters.endDate = endYears;
+      }
+    }
+
+    this.archivalResourcesTable.gtApplyFilter(filters);
+    this.archivalResourcesTable.gtSearch(historyName);
   }
 }

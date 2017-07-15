@@ -126,7 +126,7 @@ export class MunicipalitiesComponent implements OnInit, OnDestroy {
 
   private constructListFields(): any[]{
     return [{
-      name:'',
+      name:'Statut',
       objectKey:'state',
       classNames: 'text-xs-left',
       render: function(row){

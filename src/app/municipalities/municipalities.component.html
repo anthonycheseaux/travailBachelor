@@ -148,8 +148,13 @@
         [gtSettings]="configObject.settings"
         [gtFields]="configObject.fields"
         [gtData]="configObject.data"
-        #municipalitiesTable
-        [gtOptions]="{highlightSearch:true}"></generic-table>
+        [gtOptions]="{highlightSearch:true}"
+        [gtTexts]="{
+        tableInfo:'Affichage de #recordFrom à #recordTo des #recordsAfterSearch communes.',
+        tableInfoAfterSearch: 'Affichage de #recordFrom à #recordTo des #recordsAfterSearch communes (filtrées sur un total de #recordsAll communes)',
+        noData:'Aucune donnée',
+        noMatchingData:'Aucune donnée correspondante trouvée'}"
+        #municipalitiesTable></generic-table>
 
       <div class="text-center">
         <gt-pagination

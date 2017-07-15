@@ -4,7 +4,13 @@
 </div><!--loading-->
 
 <div id="loaded" *ngIf="!loading">
-  <h3 class="text-center">Unités de descriptions</h3>
+  <h3 class="text-center">
+    Unités de descriptions
+    <span
+      mdTooltip="Ressources des archives fédérales suisses contenant le nom de la commune sélectionnée et des communes composant son histoire.">
+      <i class="glyphicon glyphicon-question-sign small"></i>
+    </span>
+  </h3>
 
   <h4 class="text-center">
     {{currentMunicipalityVersion ? (currentMunicipalityVersion.name | uppercase) : ''}},
@@ -26,7 +32,18 @@
             <div class="panel-body">
               <form #filterForm class="form-horizontal">
                 <label class="control-label">Histoire</label>
-                <div class="checkbox" *ngFor="let element of historyCheckBoxField">
+                <select
+                  id="historyName"
+                  class="form-control"
+                  #historyName
+                  (change)="onChangeFilter(startDate.value, endDate.value, historyName.value)">
+                  <option>Sélectionner un nom</option>
+                  <option
+                    *ngFor="let element of historyCheckBoxField"
+                    [ngValue]="element">
+                    {{element}}</option>
+                </select>
+                <!--<div class="checkbox" *ngFor="let element of historyCheckBoxField">
                   <label>
                     <input
                       type="checkbox"
@@ -35,7 +52,7 @@
                       (change)="onChangeFilter(startDate.value, endDate.value, element, $event)">
                      {{element}}
                   </label>
-                </div>
+                </div>-->
 
                 <hr>
 
@@ -45,9 +62,8 @@
                     id="start-date"
                     class="form-control"
                     #startDate
-                    (change)="onChangeFilter(startDate.value, endDate.value, element, $event)">
+                    (change)="onChangeFilter(startDate.value, endDate.value, historyName.value)">
                     <option>Début</option>
-                    <option>Sans date</option>
                     <option
                       *ngFor="let year of startPeriod"
                       [ngValue]="year">
@@ -58,9 +74,8 @@
                     id="end-date"
                     class="form-control"
                     #endDate
-                    (change)="onChangeFilter(startDate.value, endDate.value, element, $event)">
+                    (change)="onChangeFilter(startDate.value, endDate.value, historyName.value)">
                     <option>Fin</option>
-                    <option>Sans date</option>
                     <option
                       *ngFor="let year of endPeriod"
                       [ngValue]="year">
@@ -76,8 +91,8 @@
 
                 <div align="center">
                   <a class="btn btn-info"
-                  (click)="filterForm.reset();
-                    onChangeFilter(startDate.value, endDate.value, element, $event);">
+                     (click)="filterForm.reset();
+                    onChangeFilter(startDate.value, endDate.value, historyName.value);">
                     <!--municipalitiesTable.gtClearFilter();-->
                     Réinitialitiser les filtres
                   </a>
@@ -91,7 +106,7 @@
       <div class="row"><div class="col-md-12"><br></div></div>
     </div>
 
-    <!--<div id="result-table" class="col-md-9">
+    <div id="result-table" class="col-md-9">
 
       <div class="row">
         <div class="col-md-7">
@@ -119,15 +134,20 @@
         [gtSettings]="configObject.settings"
         [gtFields]="configObject.fields"
         [gtData]="configObject.data"
-        #archivalResourcesTable
-        [gtOptions]="{highlightSearch:true}"></generic-table>
+        [gtOptions]="{highlightSearch:true}"
+        [gtTexts]="{
+        tableInfo:'Affichage de #recordFrom à #recordTo des #recordsAfterSearch unités de description.',
+        tableInfoAfterSearch: 'Affichage de #recordFrom à #recordTo des #recordsAfterSearch unités de description (filtrées sur un total de #recordsAll unités de description)',
+        noData:'Aucune donnée',
+        noMatchingData:'Aucune donnée correspondante trouvée'}"
+        #archivalResourcesTable></generic-table>
 
       <div class="text-center">
         <gt-pagination
           [gtClasses]="'pagination-sm justify-content-center'"
           [genericTable]="archivalResourcesTable"></gt-pagination>
       </div>
-    </div>-->
+    </div>
 
   </div><!--row-->
 
