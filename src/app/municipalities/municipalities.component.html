@@ -3,7 +3,11 @@
   <md-spinner style="margin:0 auto;" mode="indeterminate"></md-spinner>
 </div>
 
-<div *ngIf="!loading">
+<div class="col-md-12 text-center" *ngIf="error" style="margin: 20px">
+  <span class="alert alert-danger">Erreur, veuillez essayez plus tard !</span>
+</div>
+
+<div class="col-md-12" *ngIf="!loading">
 
   <h3 class="text-center">Liste des communes</h3><br><br>
 

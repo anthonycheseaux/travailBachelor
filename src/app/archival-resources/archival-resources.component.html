@@ -3,6 +3,10 @@
   <md-spinner style="margin:0 auto;" mode="indeterminate"></md-spinner>
 </div><!--loading-->
 
+<div class="col-md-12 text-center" *ngIf="error" style="margin: 20px">
+  <span class="alert alert-danger">Erreur, veuillez essayez plus tard !</span>
+</div>
+
 <div id="loaded" *ngIf="!loading">
   <h3 class="text-center">
     Unités de descriptions

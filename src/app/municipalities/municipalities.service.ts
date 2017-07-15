@@ -12,7 +12,9 @@ const endpointUrl  = 'https://test.lindas-data.ch:8443/lindas/query?query=';
 @Injectable()
 export class MunicipalitiesService {
   private municipalities: MunicipalityVersion[];
-  private observable: Observable<any>;
+  private municipalitiesObservable: Observable<any>;
+  private cantons: Canton[];
+  private cantonsObservable: Observable<any>;
 
   constructor(private http: Http) {}
 
@@ -28,68 +30,68 @@ export class MunicipalitiesService {
   }
 
   /*getHistory(uris: string){
-    let query:string = 'SELECT ?version ?id ?name ?cantonName ?districtName ?adDate ?adLabel ?abDate ?abLabel ' +
-      'FROM  <https://linked.opendata.swiss/graph/eCH-0071> ' +
-      'WHERE { ' +
-    'VALUES ?version {'+ uris +'} ' +
-      '?version a gont:MunicipalityVersion; ' +
-      'gont:id ?id; ' +
-      'gont:longName ?name; ' +
-      ' gont:canton ?c; ' +
-      'gont:district ?d; ' +
-      'gont:admissionEvent ?adEvent; ' +
-    'gont:admissionMode ?adMode. ' +
-    '?c gont:longName ?cantonName. ' +
-    '?d gont:longName ?districtName. ' +
-    '?adEvent gont:date ?adDate. ' +
-      '?adMode skos:prefLabel ?adLabel. ' +
-    'OPTIONAL{ ' +
-      '?version gont:abolitionEvent ?abEvent; ' +
-    'gont:abolitionMode ?abMode. ' +
-    '?abEvent gont:date ?abDate. ' +
-      '?abMode skos:prefLabel ?abLabel. ' +
-      '} ' +
-      '}';
+   let query:string = 'SELECT ?version ?id ?name ?cantonName ?districtName ?adDate ?adLabel ?abDate ?abLabel ' +
+   'FROM  <https://linked.opendata.swiss/graph/eCH-0071> ' +
+   'WHERE { ' +
+   'VALUES ?version {'+ uris +'} ' +
+   '?version a gont:MunicipalityVersion; ' +
+   'gont:id ?id; ' +
+   'gont:longName ?name; ' +
+   ' gont:canton ?c; ' +
+   'gont:district ?d; ' +
+   'gont:admissionEvent ?adEvent; ' +
+   'gont:admissionMode ?adMode. ' +
+   '?c gont:longName ?cantonName. ' +
+   '?d gont:longName ?districtName. ' +
+   '?adEvent gont:date ?adDate. ' +
+   '?adMode skos:prefLabel ?adLabel. ' +
+   'OPTIONAL{ ' +
+   '?version gont:abolitionEvent ?abEvent; ' +
+   'gont:abolitionMode ?abMode. ' +
+   '?abEvent gont:date ?abDate. ' +
+   '?abMode skos:prefLabel ?abLabel. ' +
+   '} ' +
+   '}';
 
-    let getUrl = endpointUrl+encodeURIComponent(query);
+   let getUrl = endpointUrl+encodeURIComponent(query);
 
-    return this.http.get(getUrl, {headers: this.getHeaders()})
-      .map(
-        (response: Response) => {
-          let data = response.json().results.bindings;
-          let elements: MunicipalityVersion[] = [];
+   return this.http.get(getUrl, {headers: this.getHeaders()})
+   .map(
+   (response: Response) => {
+   let data = response.json().results.bindings;
+   let elements: MunicipalityVersion[] = [];
 
-          console.log(data);
+   console.log(data);
 
-          for (const e of data) {
+   for (const e of data) {
 
-          }
+   }
 
-          return elements;
-        }
-      );
-  }*/
+   return elements;
+   }
+   );
+   }*/
 
   getRelatedMunicipalities(id: number){
     let query:string = 'SELECT distinct ?otherVersion ?otherVersionLabel ' +
       'FROM  <https://linked.opendata.swiss/graph/eCH-0071> ' +
       'WHERE { ' +
       '?currentVersion a gont:MunicipalityVersion; ' +
-    'gont:id '+ id +' . ' +
+      'gont:id '+ id +' . ' +
       '?municipality a gont:PoliticalMunicipality; ' +
       'gont:municipalityVersion ?currentVersion; ' +
       'gont:municipalityVersion ?version. ' +
-    '{ ' +
-    '?version gont:admissionEvent ?versionAdmissionEvent. ' +
-    '?version gont:admissionMode ?versionAdmissionMode. ' +
+      '{ ' +
+      '?version gont:admissionEvent ?versionAdmissionEvent. ' +
+      '?version gont:admissionMode ?versionAdmissionMode. ' +
       '?otherVersion a gont:MunicipalityVersion; ' +
       'gont:abolitionEvent ?versionAdmissionEvent; ' +
       'gont:longName ?otherVersionLabel. ' +
       '} ' +
       'UNION ' +
-    '{ ' +
-    '?version gont:abolitionEvent ?versionAbolitionEvent. ' +
-    '?version gont:abolitionMode ?versionAbolitionMode. ' +
+      '{ ' +
+      '?version gont:abolitionEvent ?versionAbolitionEvent. ' +
+      '?version gont:abolitionMode ?versionAbolitionMode. ' +
       '?otherVersion a gont:MunicipalityVersion; ' +
       'gont:admissionEvent ?versionAbolitionEvent; ' +
       'gont:longName ?otherVersionLabel. ' +
@@ -118,9 +120,9 @@ export class MunicipalitiesService {
     if(this.municipalities){
       return Observable.of(this.municipalities);
     }
-    else if(this.observable) {
+    else if(this.municipalitiesObservable) {
       //pending request
-      return this.observable;
+      return this.municipalitiesObservable;
     }else {
       //new request
       let query:string =
@@ -155,10 +157,10 @@ export class MunicipalitiesService {
 
       let getUrl = endpointUrl+encodeURIComponent(query);
 
-      this.observable = this.http.get(getUrl, {headers: this.getHeaders()})
+      this.municipalitiesObservable = this.http.get(getUrl, {headers: this.getHeaders()})
         .map(
           (response: Response) => {
-            this.observable = null;
+            this.municipalitiesObservable = null;
 
             let data = response.json().results.bindings;
             let elements: MunicipalityVersion[] = [];
@@ -213,7 +215,7 @@ export class MunicipalitiesService {
             return this.municipalities;
           }
         ).share();
-      return this.observable;
+      return this.municipalitiesObservable;
     }
   }
 
@@ -290,99 +292,113 @@ export class MunicipalitiesService {
 
   getCantonsDistricts() {
 
-    let query:string =
-      'PREFIX gont: <https://gont.ch/> ' +
-      'PREFIX skos: <http://www.w3.org/2004/02/skos/core#> ' +
-      'SELECT ?canton ?cantonId ?cantonName ?cantonAbbreviation ?cantonDate ' +
-      '?district ?districtId ?districtName ?adModeLabel ?abModeLabel ' +
-      'WHERE { ' +
-      '?canton a gont:Canton; ' +
-      'gont:id ?cantonId; ' +
-      'gont:longName ?cantonName; ' +
-      'gont:cantonAbbreviation ?cantonAbbreviation; ' +
-      'gont:date ?cantonDate. ' +
-      '?district a gont:DistrictEntityVersion; ' +
-      'gont:canton ?canton; ' +
-      'gont:id ?districtId; ' +
-      'gont:longName ?districtName; ' +
-      'gont:admissionMode ?districtAdMode. ' +
-      '?districtAdMode skos:prefLabel ?adModeLabel. ' +
-      'OPTIONAL {?district gont:abolitionMode ?districtAbMode. ' +
-      '?districtAbMode skos:prefLabel ?abModeLabel.} ' +
-      '}' +
-      'ORDER BY ?cantonName ?districtName';
+    if(this.cantons){
+      return Observable.of(this.cantons);
+    }
+    else if(this.cantonsObservable) {
+      //pending request
+      return this.cantonsObservable;
+    }else {
+      //new request
+      let query: string =
+        'PREFIX gont: <https://gont.ch/> ' +
+        'PREFIX skos: <http://www.w3.org/2004/02/skos/core#> ' +
+        'SELECT ?canton ?cantonId ?cantonName ?cantonAbbreviation ?cantonDate ' +
+        '?district ?districtId ?districtName ?adModeLabel ?abModeLabel ' +
+        'WHERE { ' +
+        '?canton a gont:Canton; ' +
+        'gont:id ?cantonId; ' +
+        'gont:longName ?cantonName; ' +
+        'gont:cantonAbbreviation ?cantonAbbreviation; ' +
+        'gont:date ?cantonDate. ' +
+        '?district a gont:DistrictEntityVersion; ' +
+        'gont:canton ?canton; ' +
+        'gont:id ?districtId; ' +
+        'gont:longName ?districtName; ' +
+        'gont:admissionMode ?districtAdMode. ' +
+        '?districtAdMode skos:prefLabel ?adModeLabel. ' +
+        'OPTIONAL {?district gont:abolitionMode ?districtAbMode. ' +
+        '?districtAbMode skos:prefLabel ?abModeLabel.} ' +
+        '}' +
+        'ORDER BY ?cantonName ?districtName';
 
-    let getUrl = endpointUrl+encodeURIComponent(query);
+      let getUrl = endpointUrl + encodeURIComponent(query);
 
-    return this.http.get(getUrl, {headers: this.getHeaders()})
-      .map(
-        (response: Response) => {
-          let data = response.json().results.bindings;
-          let elements: Canton[] = [];
-          let currentDistricts: District[];
-          let currentCanton: Canton;
-          let currentDistrict: District;
-          let abModeLabel: string = null;
+      this.cantonsObservable = this.http.get(getUrl, {headers: this.getHeaders()})
+        .map(
+          (response: Response) => {
+            this.cantonsObservable = null;
 
-          let cantonBefore: number = -1;
-          for(const e of data){
-            if(e.hasOwnProperty('abModeLabel')){
-              abModeLabel = e.abModeLabel.value;
-            }
+            let data = response.json().results.bindings;
+            let elements: Canton[] = [];
+            let currentDistricts: District[];
+            let currentCanton: Canton;
+            let currentDistrict: District;
+            let abModeLabel: string = null;
 
-            currentDistrict = new District(
-              +e.districtId.value,
-              e.districtName.value,
-              e.district.value,
-              e.adModeLabel.value,
-              abModeLabel
-            );
+            let cantonBefore: number = -1;
+            for (const e of data) {
+              if (e.hasOwnProperty('abModeLabel')) {
+                abModeLabel = e.abModeLabel.value;
+              }
 
-            if(cantonBefore != +e.cantonId.value){
-              currentDistricts = [];
-
-              currentCanton = new Canton(
-                +e.cantonId.value,
-                e.cantonAbbreviation.value,
-                e.cantonName.value,
-                e.canton.value,
-                e.cantonDate.value,
-                currentDistricts
+              currentDistrict = new District(
+                +e.districtId.value,
+                e.districtName.value,
+                e.district.value,
+                e.adModeLabel.value,
+                abModeLabel
               );
 
-              elements.push(currentCanton);
-            }
+              if (cantonBefore != +e.cantonId.value) {
+                currentDistricts = [];
 
-            currentCanton.districts.push(currentDistrict);
+                currentCanton = new Canton(
+                  +e.cantonId.value,
+                  e.cantonAbbreviation.value,
+                  e.cantonName.value,
+                  e.canton.value,
+                  e.cantonDate.value,
+                  currentDistricts
+                );
 
-            cantonBefore = +e.cantonId.value;
-            abModeLabel = null;
-          }
-
-          let lastDistrict: District = new District(null, '', null, null, null);
-          let districtToRemove: District[] = [];
-
-          for(const canton of elements){
-            for(const district of canton.districts){
-              if(lastDistrict.name == district.name){
-                if(lastDistrict.abolitionMode == null && district.abolitionMode != null){
-                  districtToRemove.push(district);
-                } else {
-                  districtToRemove.push(lastDistrict);
-                }
+                elements.push(currentCanton);
               }
-              lastDistrict = district;
+
+              currentCanton.districts.push(currentDistrict);
+
+              cantonBefore = +e.cantonId.value;
+              abModeLabel = null;
             }
 
-            for(const i of districtToRemove){
-              canton.districts.splice(canton.districts.indexOf(i), 1);
-            }
+            let lastDistrict: District = new District(null, '', null, null, null);
+            let districtToRemove: District[] = [];
 
-            districtToRemove = [];
+            for (const canton of elements) {
+              for (const district of canton.districts) {
+                if (lastDistrict.name == district.name) {
+                  if (lastDistrict.abolitionMode == null && district.abolitionMode != null) {
+                    districtToRemove.push(district);
+                  } else {
+                    districtToRemove.push(lastDistrict);
+                  }
+                }
+                lastDistrict = district;
+              }
+
+              for (const i of districtToRemove) {
+                canton.districts.splice(canton.districts.indexOf(i), 1);
+              }
+
+              districtToRemove = [];
+            }
+            this.cantons = elements;
+
+            return this.cantons;
           }
-          return elements;
-        }
-      );
+        ).share();
+      return this.cantonsObservable;
+    }
   }
 
   private removeDistricts(array: District[], index: number[]){

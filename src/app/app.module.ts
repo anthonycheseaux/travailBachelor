@@ -42,8 +42,7 @@ import {ArchivalResourcesService} from "./archival-resources/archival-resources.
     ColumnSettingsModule
   ],
   providers: [
-    MunicipalitiesService,
-    ArchivalResourcesService
+    MunicipalitiesService
   ],
   bootstrap: [AppComponent]
 })

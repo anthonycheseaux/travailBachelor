@@ -7,7 +7,11 @@
     </h2>
   </div>
 
-  <div class="col-md-12">
+  <div class="col-md-12 text-center" *ngIf="error" style="margin: 20px">
+    <span class="alert alert-danger">Erreur, veuillez essayez plus tard !</span>
+  </div>
+
+  <div class="col-md-12" *ngIf="!error">
     <h4>
       Rechercher parmi les communes actives
       <span
@@ -16,7 +20,7 @@
         <i class="glyphicon glyphicon-question-sign small"></i>
       </span>
     </h4>
-    <md-input-container *ngIf="true">
+    <md-input-container>
       <input
         mdInput placeholder="Commune"
         size="40px"

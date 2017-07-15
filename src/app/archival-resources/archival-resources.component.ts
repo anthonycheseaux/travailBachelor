@@ -23,7 +23,8 @@ const swissArchiveURL: string = 'https://www.swiss-archives.ch/detail.aspx?id=';
 @Component({
   selector: 'app-archival-resources',
   templateUrl: './archival-resources.component.html',
-  styleUrls: ['./archival-resources.component.css']
+  styleUrls: ['./archival-resources.component.css'],
+  providers: [ArchivalResourcesService]
 })
 export class ArchivalResourcesComponent implements OnInit, OnDestroy {
 
@@ -67,6 +68,8 @@ export class ArchivalResourcesComponent implements OnInit, OnDestroy {
 
   historyCheckBoxValues: string[];
 
+  error: boolean;
+
   archivalResourcesTemp: ArchivalResources[];
 
   constructor(public sanitizer: DomSanitizer,
@@ -77,6 +80,8 @@ export class ArchivalResourcesComponent implements OnInit, OnDestroy {
     this.settings = this.constructListSettings();
     this.fields = this.constructListFields();
     this.configObject = null;
+
+    this.error = false;
 
     this.startPeriod = [];
     this.endPeriod = [];
@@ -114,7 +119,10 @@ export class ArchivalResourcesComponent implements OnInit, OnDestroy {
     this.getAllMunicipalitiesSubscription =
       this.municipalitiesService.getAllMunicipalities().subscribe(
         (elements: any[]) => this.options = elements,
-        (error) => console.log(error),
+        (error) => {
+          console.log(error);
+          this.error = true;
+        },
         () => {
           this.routeSubscription =
             this.route.params.subscribe(
@@ -146,6 +154,10 @@ export class ArchivalResourcesComponent implements OnInit, OnDestroy {
                 this.configObject = {settings: this.settings, fields: this.fields, data: this.archivalResourcesTemp};
                 //this.afterLoadRelated(this.related);
                 this.loading = false;
+              },
+              (error) => {
+                console.log(error);
+                this.error = true;
               }
             );
         }
@@ -175,12 +187,7 @@ export class ArchivalResourcesComponent implements OnInit, OnDestroy {
         (elements: any[]) => this.archivalResources = elements,
         (error) => {
           console.log(error);
-          this.configObject = {
-            settings: this.settings,
-            fields: this.fields,
-            data: [null]
-          };
-          this.loading = false;
+          this.error = true;
         },
         () => {
           this.configObject = {settings: this.settings, fields: this.fields, data: this.options};

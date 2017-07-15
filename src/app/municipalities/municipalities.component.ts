@@ -47,27 +47,38 @@ export class MunicipalitiesComponent implements OnInit, OnDestroy {
   getAllMunicipalitiesSubscription: Subscription;
   getCantonDistrictSubscription: Subscription;
 
+  error: boolean;
+
   constructor(private router: Router, private municipalitiesService: MunicipalitiesService) {
     this.loading = true;
     this.settings = this.constructListSettings();
     this.fields = this.constructListFields();
+    this.error = false;
   }
 
   ngOnInit() {
     this.getAllMunicipalitiesSubscription =
       this.municipalitiesService.getAllMunicipalities().subscribe(
-      (elements: any[]) => this.options = elements,
-      (error) => console.log(error),
-      () => {
-        this.configObject = {settings: this.settings, fields: this.fields, data: this.options};
-        this.loading = false;
-      }
-    );
+        (elements: any[]) => this.options = elements,
+        (error) => {
+          console.log(error);
+          this.error = true;
+        },
+        () => {
+          this.configObject = {settings: this.settings, fields: this.fields, data: this.options};
 
-    this.getCantonDistrictSubscription =
-      this.municipalitiesService.getCantonsDistricts().subscribe(
-        (elements: any[]) => this.cantons = elements,
-        (error) => console.log(error)
+          this.getCantonDistrictSubscription =
+            this.municipalitiesService.getCantonsDistricts().subscribe(
+              (elements: any[]) => this.cantons = elements,
+              (error) => {
+                console.log(error);
+                this.error = true;
+              },
+              () => {
+                this.loading = false;
+              }
+            );
+        }
       );
   }
 
