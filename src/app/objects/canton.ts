@@ -1,5 +1,8 @@
 import {District} from "./district";
 
+/**
+ * The object Canton
+ */
 export class Canton {
   id: number;
   code: string;

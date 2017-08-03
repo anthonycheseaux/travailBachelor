@@ -1,4 +1,4 @@
-import {Component, OnInit, OnDestroy, ViewChild} from '@angular/core';
+import {Component, OnInit, OnDestroy, ViewChild, OnChanges} from '@angular/core';
 import {ArchivalResourcesService} from "./archival-resources.service";
 import {MunicipalitiesService} from "../municipalities/municipalities.service";
 import {MunicipalityVersion} from "../objects/municipality-version";
@@ -109,27 +109,35 @@ export class ArchivalResourcesComponent implements OnInit, OnDestroy {
       new ArchivalResources(2125911, "http://data.alod.ch/bar/id/archivalresource/2125911", "Leutnant Wolfender, Aadorf", "E5001F#1000/1851#2353*", 1950, null),
       new ArchivalResources(2397965, "http://data.alod.ch/bar/id/archivalresource/2397965", "	Projekt-Nr. 20-133: Kanton Thurgau, Tiefbauamt, Guntershausen: Ausbau der Staatstrasse Aadorf-Guntershausen", "E7291B#1980/16#1815*", 1976, 1977)
     ]
+
+    console.log("constructor");
   }
 
   ngOnInit() {
+    console.log("ngOnInit");
+
     this.loading = true;
 
+    this.routeSubscription =
+      this.route.params.subscribe(
+        (params: Params) => {
+          console.log("route params");
 
+          this.loading = true;
 
-    this.getAllMunicipalitiesSubscription =
-      this.municipalitiesService.getAllMunicipalities().subscribe(
-        (elements: any[]) => this.options = elements,
-        (error) => {
-          console.log(error);
-          this.error = true;
-        },
-        () => {
-          this.routeSubscription =
-            this.route.params.subscribe(
-              (params: Params) => {
+          this.versionId = params['id'];
 
-                this.versionId = params['id'];
-
+          this.getAllMunicipalitiesSubscription =
+            this.municipalitiesService.getAllMunicipalities().subscribe(
+              (elements: any[]) => {
+                console.log("getAllMun");
+                this.options = elements;
+              },
+              (error) => {
+                console.log(error);
+                this.error = true;
+              },
+              () => {
                 this.currentMunicipalityVersion = this.options.find(x => x.id == this.versionId);
 
                 this.related = this.getRelatedVersions(this.currentMunicipalityVersion);
@@ -151,17 +159,14 @@ export class ArchivalResourcesComponent implements OnInit, OnDestroy {
                   }
                 }
 
-                this.configObject = {settings: this.settings, fields: this.fields, data: this.archivalResourcesTemp};
-                //this.afterLoadRelated(this.related);
-                this.loading = false;
-              },
-              (error) => {
-                console.log(error);
-                this.error = true;
+                this.afterLoadRelated(this.related);
               }
             );
-        }
-      );
+        },
+        (error) => {
+          console.log(error);
+          this.error = true;
+        });
 
     /*this.route.params.subscribe(
      (params: Params) => {
@@ -182,7 +187,7 @@ export class ArchivalResourcesComponent implements OnInit, OnDestroy {
 
   private afterLoadRelated(related: MunicipalityVersion[]): void {
     this.archivalResourcesService
-      .getArchivalResourcesMatchingNames(this.constructNamesString(related))
+      .getArchivalResourcesMatchingNames(this.currentMunicipalityVersion, related)
       .subscribe(
         (elements: any[]) => this.archivalResources = elements,
         (error) => {
@@ -190,7 +195,7 @@ export class ArchivalResourcesComponent implements OnInit, OnDestroy {
           this.error = true;
         },
         () => {
-          this.configObject = {settings: this.settings, fields: this.fields, data: this.options};
+          this.configObject = {settings: this.settings, fields: this.fields, data: this.archivalResources};
           this.loading = false;
         }
       );
@@ -212,7 +217,7 @@ export class ArchivalResourcesComponent implements OnInit, OnDestroy {
 
     for (let w of work) {
       for (let r of related) {
-        if (r.abolitionMutation && w.name != r.name && w.admissionMutation.id == r.abolitionMutation.id) {
+        if (!r.state && w.name != r.name && w.admissionMutation.id == r.abolitionMutation.id) {
           if(!history.find(x => x.id == r.id)){
             history.push({
               'label': "other",
@@ -223,7 +228,7 @@ export class ArchivalResourcesComponent implements OnInit, OnDestroy {
             });
           }
         }
-        if (w.abolitionMutation && w.name != r.name && w.abolitionMutation.id == r.admissionMutation.id) {
+        if (!w.state && w.name != r.name && w.abolitionMutation.id == r.admissionMutation.id) {
           if(!history.find(x => x.id == r.id)){
             history.push({
               'label': "other",
@@ -252,22 +257,6 @@ export class ArchivalResourcesComponent implements OnInit, OnDestroy {
     return history;
   }
 
-  private constructNamesString(relatedVersions: MunicipalityVersion[]): string{
-    let names: string = '';
-
-    names = names + "\"" + this.currentMunicipalityVersion.name + "\"";
-
-    if(relatedVersions.length > 0){
-      for (let version of relatedVersions) {
-        if (names.indexOf(version.name) == -1) {
-          names = names + " OR " + "\"" + version.name + "\"";
-        }
-      }
-    }
-
-    return names;
-  }
-
   private getRelatedVersions(current: MunicipalityVersion): MunicipalityVersion[] {
     let sameM: MunicipalityVersion[] = [];
 
@@ -282,8 +271,10 @@ export class ArchivalResourcesComponent implements OnInit, OnDestroy {
     for (const same of sameM) {
       for (const option of this.options) {
         if (same.abolitionMutation) {
-          if (same.abolitionMutation.id == option.admissionMutation.id) {
-            related.push(option);
+          if (related.indexOf(option) == -1) {
+            if (same.abolitionMutation.id == option.admissionMutation.id) {
+              related.push(option);
+            }
           }
         }
         if (option.abolitionMutation) {
@@ -358,7 +349,7 @@ export class ArchivalResourcesComponent implements OnInit, OnDestroy {
       search: true
     },{
       objectKey:'startDate',
-      sort:'enable',
+      sort:'disable',
       columnOrder:3,
       search: false
     },{
@@ -392,7 +383,7 @@ export class ArchivalResourcesComponent implements OnInit, OnDestroy {
     },{
       name:'Début',
       objectKey:'startDate',
-      classNames: 'sort-string',
+      classNames: 'sort-numeric',
       value: function(row){
         if(row.startDate){
           return row.startDate;
@@ -402,7 +393,7 @@ export class ArchivalResourcesComponent implements OnInit, OnDestroy {
     },{
       name:'Fin',
       objectKey:'endDate',
-      classNames: 'clickable sort-numeric',
+      classNames: 'sort-numeric',
       value: function(row){
         if(row.endDate){
           return row.endDate;
@@ -419,6 +410,8 @@ export class ArchivalResourcesComponent implements OnInit, OnDestroy {
   }
 
   private onChangeFilter(startDate, endDate, historyName){
+    console.log(startDate + " " + endDate + " " + historyName);
+
     let filters: IFilters = {};
 
     this.invalidPeriod = false;
@@ -426,15 +419,6 @@ export class ArchivalResourcesComponent implements OnInit, OnDestroy {
     if(historyName == 'Sélectionner un nom'){
       historyName = '';
     }
-
-    /*if(checkBoxHistoryValue && event.target.checked){
-      this.historyCheckBoxValues.push(checkBoxHistoryValue);
-    }
-    else if (checkBoxHistoryValue && !event.target){
-      let index = this.historyCheckBoxValues.indexOf(checkBoxHistoryValue);
-      this.historyCheckBoxValues.splice(index,1);
-    }
-    filters.title = this.historyCheckBoxValues;*/
 
     if(startDate != 'Début' && endDate != 'Fin' && startDate > endDate) {
       this.invalidPeriod = true;
@@ -461,6 +445,8 @@ export class ArchivalResourcesComponent implements OnInit, OnDestroy {
         filters.endDate = endYears;
       }
     }
+
+    console.log(filters);
 
     this.archivalResourcesTable.gtApplyFilter(filters);
     this.archivalResourcesTable.gtSearch(historyName);

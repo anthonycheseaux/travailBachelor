@@ -1,8 +1,12 @@
-/* On small screens, set height to 'auto' for sidenav and grid */
+/* Auto height on small screen for content and sidenav */
 @media screen and (max-width: 767px) {
   .sidenav {
     height: auto;
     padding: 15px;
   }
   .row.content {height:auto;}
+}
+
+:host >>> span.gt-highlight-search {
+  background: yellow none repeat scroll 0 0;
 }

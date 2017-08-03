@@ -1,3 +1,6 @@
+/**
+ * The object District
+ */
 export class District{
   id: number;
   name: string;

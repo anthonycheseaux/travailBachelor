@@ -23,13 +23,14 @@ export class MunicipalitiesService {
     let password: string = 'public';
     let headers: Headers = new Headers();
 
-    headers.append("Authorization", "Basic " + btoa(username + ":" + password));
-    headers.append("Accept", "application/sparql-results+json");
+    headers.append("accept", "application/sparql-results+json");
+    headers.append("authorization", "basic " + btoa(username + ":" + password));
+
 
     return headers;
   }
 
-  /*getHistory(uris: string){
+  getHistory(uris: string){
    let query:string = 'SELECT ?version ?id ?name ?cantonName ?districtName ?adDate ?adLabel ?abDate ?abLabel ' +
    'FROM  <https://linked.opendata.swiss/graph/eCH-0071> ' +
    'WHERE { ' +
@@ -70,7 +71,7 @@ export class MunicipalitiesService {
    return elements;
    }
    );
-   }*/
+   }
 
   getRelatedMunicipalities(id: number){
     let query:string = 'SELECT distinct ?otherVersion ?otherVersionLabel ' +
@@ -170,11 +171,11 @@ export class MunicipalitiesService {
             let abolitionMutation: Mutation;
             let admissionMutation: Mutation;
             let currentVersion: MunicipalityVersion;
-            let state: number = -1;
+            let state: boolean = false;
 
             for(const e of data){
               if(e.hasOwnProperty('abEvent')){
-                state = 1;
+                state = false;
                 abolitionMutation = new Mutation(
                   e.abId.value,
                   e.abEvent.value,
@@ -184,7 +185,7 @@ export class MunicipalitiesService {
               }
               else {
                 abolitionMutation = null;
-                state = 0;
+                state = true;
               }
 
               admissionMutation = new Mutation(
@@ -206,7 +207,7 @@ export class MunicipalitiesService {
                 abolitionMutation
               ));
 
-              state = -1;
+              state = false;
             }
 
             //console.log(elements);
@@ -259,7 +260,6 @@ export class MunicipalitiesService {
 
           let abolitionMutation: Mutation = new Mutation(null, null, null, -1);
           let admissionMutation: Mutation;
-          let state: number = -1;
 
           for(const e of data){
             admissionMutation = new Mutation(
@@ -274,14 +274,12 @@ export class MunicipalitiesService {
               e.version.value,
               e.name.value,
               e.municipalityId.value,
-              state,
+              true,
               e.cantonName.value,
               e.districtName.value,
               admissionMutation,
               abolitionMutation
             ));
-
-            state = -1;
           }
 
           //console.log(elements);
@@ -371,28 +369,7 @@ export class MunicipalitiesService {
               abModeLabel = null;
             }
 
-            let lastDistrict: District = new District(null, '', null, null, null);
-            let districtToRemove: District[] = [];
-
-            for (const canton of elements) {
-              for (const district of canton.districts) {
-                if (lastDistrict.name == district.name) {
-                  if (lastDistrict.abolitionMode == null && district.abolitionMode != null) {
-                    districtToRemove.push(district);
-                  } else {
-                    districtToRemove.push(lastDistrict);
-                  }
-                }
-                lastDistrict = district;
-              }
-
-              for (const i of districtToRemove) {
-                canton.districts.splice(canton.districts.indexOf(i), 1);
-              }
-
-              districtToRemove = [];
-            }
-            this.cantons = elements;
+            this.cantons = this.removeDuplicateDistrictName(elements);;
 
             return this.cantons;
           }
@@ -401,9 +378,50 @@ export class MunicipalitiesService {
     }
   }
 
-  private removeDistricts(array: District[], index: number[]){
-    for(const i of index){
-      array.splice(i, 1);
+  private removeDuplicateDistrictName(cantons: Canton[]): Canton[]{
+  let lastDistrict: District = new District(null, '', null, null, null);
+  let districtToRemove: District[] = [];
+
+  for (const canton of cantons) {
+    for (const district of canton.districts) {
+      if (lastDistrict.name == district.name) {
+        if (lastDistrict.abolitionMode == null && district.abolitionMode != null) {
+          districtToRemove.push(district);
+        } else {
+          districtToRemove.push(lastDistrict);
+        }
+      }
+      lastDistrict = district;
     }
+
+    for (const i of districtToRemove) {
+      canton.districts.splice(canton.districts.indexOf(i), 1);
+    }
+
+    districtToRemove = [];
+  }
+
+  return cantons;
+}
+
+  public getDistinctMunicipalities(allMunicipalities: MunicipalityVersion[]): MunicipalityVersion[]{
+    let distinctMunicipalities: MunicipalityVersion[] = [];
+    let similar: MunicipalityVersion = null;
+
+    for(let version of allMunicipalities){
+      if(!distinctMunicipalities.find(x => x.name == version.name)){
+        distinctMunicipalities.push(version);
+      } else {
+        similar = distinctMunicipalities.find(x => x.name == version.name);
+
+        if(!similar.abolitionMutation || similar.abolitionMutation.date > version.abolitionMutation.date){
+          //do nothing
+        } else if(!version.abolitionMutation || version.abolitionMutation.date > similar.abolitionMutation.date){
+          distinctMunicipalities[distinctMunicipalities.indexOf(similar)] = version;
+        }
+      }
+    }
+
+    return distinctMunicipalities;
   }
 }

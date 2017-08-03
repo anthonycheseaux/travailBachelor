@@ -1,3 +1,6 @@
+/**
+ * Object ArchivalResources
+ */
 export class ArchivalResources {
   id: number;
   uri: string;

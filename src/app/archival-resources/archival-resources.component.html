@@ -205,7 +205,8 @@
                     <td>
                       <a
                         class="btn btn-primary btn-circle"
-                        (click)="router.navigate(['/municipalities/', element.id, 'archival-resources'])">
+                        [routerLink]="['/municipalities/', element.id, 'archival-resources']">
+                        <!--(click)="router.navigate(['/municipalities/', element.id, 'archival-resources'])">-->
                         <span class="glyphicon glyphicon-chevron-right"></span>
                       </a>
                     </td>

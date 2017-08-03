@@ -1,3 +1,6 @@
+/**
+ * Mutation object
+ */
 export class Mutation {
   id: number;
   uri: string;
@@ -13,6 +16,9 @@ export class Mutation {
 
 }
 
+/**
+ * Enum used to translate the label only available in German
+ */
 enum ConceptLabel {
   ""                                                  = -1,
   "Statut provisoire"                                 = 0,  //Status provisorisch

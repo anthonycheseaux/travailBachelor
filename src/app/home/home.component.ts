@@ -12,7 +12,8 @@ import {Subscription} from "rxjs";
 export class HomeComponent implements OnInit, OnDestroy {
 
   municipalities: MunicipalityVersion[] = [];
-  currentMunicipality: MunicipalityVersion = new MunicipalityVersion(null, null, '', null, -1, null, null, null, null);
+  distinctMunicipalities: MunicipalityVersion[] = [];
+  currentMunicipality: MunicipalityVersion = new MunicipalityVersion(null, null, '', null, false, null, null, null, null);
   tdMunicipalities: any[];
   invalidName: boolean = false;
   message: string = 'Erreur';
@@ -29,17 +30,15 @@ export class HomeComponent implements OnInit, OnDestroy {
     this.getAllMunicipalitiesSubscription = this.municipalitiesService.getAllMunicipalities()
       .subscribe(
         (elements: any[]) => {
-          for(let element of elements){
-            if(!element.abolitionMutation){
-              this.municipalities.push(element);
-            }
-          }
+          this.municipalities = elements;
+          this.distinctMunicipalities = this.municipalitiesService.getDistinctMunicipalities(this.municipalities);
+
+          this.tdMunicipalities = this.distinctMunicipalities;
         },
         (error) => {
           console.log(error);
           this.error = true;
-        },
-        () => this.tdMunicipalities = this.municipalities
+        }
       );
   }
 
@@ -48,12 +47,12 @@ export class HomeComponent implements OnInit, OnDestroy {
   }
 
   filterStates(val: string) {
-    return val ? this.municipalities.filter(s => new RegExp(`^${val}`, 'gi').test(s.name))
-      : this.municipalities;
+    return val ? this.distinctMunicipalities.filter(s => new RegExp(`^${val}`, 'gi').test(s.name))
+      : this.distinctMunicipalities;
   }
 
   onClick(current: string) {
-    for(let m of this.municipalities){
+    for(let m of this.distinctMunicipalities){
       if(m.name.toUpperCase() == current.trim().toUpperCase()) {
         this.router.navigate(['/municipalities/', m.id, 'archival-resources']);
       }

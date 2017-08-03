@@ -39,6 +39,8 @@ export class MunicipalitiesComponent implements OnInit, OnDestroy {
   loading: boolean;
   municipalityNb: number = 0;
 
+  distinctMunicipalities: MunicipalityVersion[] = [];
+
   configObject: GtConfig<any>;
   settings = [];
   fields = [];
@@ -65,7 +67,9 @@ export class MunicipalitiesComponent implements OnInit, OnDestroy {
           this.error = true;
         },
         () => {
-          this.configObject = {settings: this.settings, fields: this.fields, data: this.options};
+          this.distinctMunicipalities = this.municipalitiesService.getDistinctMunicipalities(this.options);
+
+          this.configObject = {settings: this.settings, fields: this.fields, data: this.distinctMunicipalities};
 
           this.getCantonDistrictSubscription =
             this.municipalitiesService.getCantonsDistricts().subscribe(
@@ -142,7 +146,7 @@ export class MunicipalitiesComponent implements OnInit, OnDestroy {
       classNames: 'text-xs-left',
       render: function(row){
         let color: string;
-        if(row.state == 'Actif'){
+        if(row.state){
           color = '#80dc18';
         }else{
           color = '#dc4351';
@@ -208,10 +212,18 @@ export class MunicipalitiesComponent implements OnInit, OnDestroy {
       filters.district = districtName;
     }
 
-    if(state != "Tous les statuts"){
-      filters.state = state;
+    switch(state){
+      case 'Actif' : {
+        filters.state = 'true';
+        break;
+      }
+      case 'Inactif' : {
+        filters.state = 'false';
+        break;
+      }
     }
 
+    console.log(filters);
     this.municipalitiesTable.gtApplyFilter(filters);
   }
 }
