@@ -9,15 +9,6 @@ import {MunicipalityVersion} from "../objects/municipality-version";
 import {Subscription} from "rxjs";
 
 /**
- * Interface used to manage filters on applied on the list
- */
-interface IFilters{
-  canton?:string;
-  district?:string;
-  state?:string;
-}
-
-/**
  * Component used to manage the municipalities
  */
 @Component({
@@ -27,57 +18,100 @@ interface IFilters{
 })
 export class MunicipalitiesComponent implements OnInit, OnDestroy {
 
-  @ViewChild(GenericTableComponent)
-  private municipalitiesTable: GenericTableComponent<any, CustomRowComponent>;
+  /**
+   * Attributes
+   */
+      //Table to display the municipalities versions
+      @ViewChild(GenericTableComponent)
+      private municipalitiesTable: GenericTableComponent<any, CustomRowComponent>;
 
-  states: string[] = ["Actif", "Inactif"];
-  cantons: Canton[] = [];
-  districts: District[] = [];
-  disableDistricts = true;
+      //State string for drop down list
+      states: string[] = ["Actif", "Inactif"];
 
-  options: MunicipalityVersion[] = [];
-  loading: boolean;
-  municipalityNb: number = 0;
+      //Arrays for the cantons and districts display in filters
+      cantons: Canton[] = [];
+      districts: District[] = [];
 
-  distinctMunicipalities: MunicipalityVersion[] = [];
+      //Boolean to enable or disable the district filters usage
+      disableDistricts = true;
 
-  configObject: GtConfig<any>;
-  settings = [];
-  fields = [];
+      //Array for all municipalities versions
+      allMunicipalitiyVersions: MunicipalityVersion[] = [];
 
-  //Subscriptions
-  getAllMunicipalitiesSubscription: Subscription;
-  getCantonDistrictSubscription: Subscription;
+      //Boolean used to enable and disable the loading UI
+      //true = loading UI is display ; false = loading display is hidden
+      loading: boolean;
 
-  error: boolean;
+      //Array for municipality versions to display in the table
+      distinctMunicipalities: MunicipalityVersion[] = [];
 
+      //Objects needed to configure the table
+      configObject: GtConfig<any>;
+      settings = [];
+      fields = [];
+
+      //Subscriptions object to manage observable
+      getAllMunicipalitiesSubscription: Subscription;
+      getCantonDistrictSubscription: Subscription;
+
+      //Boolean used to display the error message in UI
+      error: boolean;
+
+  /**
+   *
+   * @param router DI used for the routing, redirection to another defined route in app
+   * @param municipalitiesService DI used to get data from HTTP requests
+   */
   constructor(private router: Router, private municipalitiesService: MunicipalitiesService) {
+    //loading of the component start here
     this.loading = true;
+
+    //initialisation of the settings and the options of the table managed in dedicated methods
     this.settings = this.constructListSettings();
     this.fields = this.constructListFields();
+
+    //initialisation to no error
     this.error = false;
   }
 
+  /**
+   * Initialisation of the component that happen after the constructor method
+   */
   ngOnInit() {
+    //Load of the all the municipalities versions by the service method subscription
     this.getAllMunicipalitiesSubscription =
       this.municipalitiesService.getAllMunicipalities().subscribe(
-        (elements: any[]) => this.options = elements,
+        //Method return array store in component attribute
+        (elements: any[]) => this.allMunicipalitiyVersions = elements,
+
+        //If an error happened, log in the console and information in the UI
         (error) => {
           console.log(error);
           this.error = true;
         },
-        () => {
-          this.distinctMunicipalities = this.municipalitiesService.getDistinctMunicipalities(this.options);
 
+        //On complete the observable
+        () => {
+          //Get the distinct municipalities for the displaying in the table
+          this.distinctMunicipalities = this.municipalitiesService.getDistinctMunicipalities(this.allMunicipalitiyVersions);
+
+          //Parameters pass to the table
           this.configObject = {settings: this.settings, fields: this.fields, data: this.distinctMunicipalities};
 
+          //Get cantons and districts from the service
           this.getCantonDistrictSubscription =
             this.municipalitiesService.getCantonsDistricts().subscribe(
+              //Result in compenent object
               (elements: any[]) => this.cantons = elements,
+
+              //On error management
               (error) => {
                 console.log(error);
+                //Informaiton in UI
                 this.error = true;
               },
+
+              //On complete, hide load UI, display real content
               () => {
                 this.loading = false;
               }
@@ -86,11 +120,22 @@ export class MunicipalitiesComponent implements OnInit, OnDestroy {
       );
   }
 
+  /**
+   * Used to manage object's instances to destroy
+   */
   ngOnDestroy() {
-    this.getAllMunicipalitiesSubscription.unsubscribe();
-    this.getCantonDistrictSubscription.unsubscribe();
+
+    //Destruction of the subscription if they are instantiate
+    if(this.getAllMunicipalitiesSubscription)
+      this.getAllMunicipalitiesSubscription.unsubscribe();
+
+    if(this.getCantonDistrictSubscription)
+      this.getCantonDistrictSubscription.unsubscribe();
   }
 
+  /**
+   * @returns Object use to specify the settings of the table
+   */
   private constructListSettings(): any[]{
     return [{
       objectKey:'id',
@@ -121,7 +166,7 @@ export class MunicipalitiesComponent implements OnInit, OnDestroy {
       search: false
     },{
       objectKey: 'abolitionDate',
-      sort: 'disable',
+      sort: 'enable',
       visible: true,
       columnOrder: 5,
       search: false
@@ -139,6 +184,9 @@ export class MunicipalitiesComponent implements OnInit, OnDestroy {
     }];
   }
 
+  /**
+   * @returns Object use to specify the displaying settings and behavior of the elements of the table
+   */
   private constructListFields(): any[]{
     return [{
       name:'Statut',
@@ -194,25 +242,52 @@ export class MunicipalitiesComponent implements OnInit, OnDestroy {
     }];
   }
 
+  /**
+   * Method used by the filterForm elements to filter the elements in the table
+   * @param cantonName String Name from drop down list
+   * @param districtName String Name from drop down list
+   * @param state String used to know if active or inactive municipalities to display
+   */
   onChangeFilter(cantonName:string, districtName: string, state: string){
+    //Object use to send all the filters to apply on the table
     let filters: IFilters = {};
 
+    //If initial state empty and disable district selection
     if(cantonName == "Tous les cantons"){
       this.districts = [];
       this.disableDistricts = true;
     }
+    //Any other selection
     else {
+      //Find selected canton
       let current: Canton = this.cantons.find(x => x.name == cantonName);
+
+      //Fill districts to display
       this.districts = current.districts;
+
+      //Allow district selection
       this.disableDistricts = false;
+
+      //Fill filters object with selected canton
       filters.canton = cantonName;
     }
 
+    //If not in initial state
     if(districtName != "Tous les districts"){
+
+      //Fill filters object with selected district
       filters.district = districtName;
     }
 
+    /**
+     * If initial state, do nothing
+     * If active convert to true
+     * If inactive convert to false
+     */
     switch(state){
+      case 'Tous les statuts' : {
+        break;
+      }
       case 'Actif' : {
         filters.state = 'true';
         break;
@@ -223,7 +298,17 @@ export class MunicipalitiesComponent implements OnInit, OnDestroy {
       }
     }
 
-    console.log(filters);
+    //Apply the filter using the library method of the table
     this.municipalitiesTable.gtApplyFilter(filters);
   }
+}
+
+/**
+ * Interface used to manage filters on applied on the list
+ * Parameters are all optionals
+ */
+interface IFilters{
+  canton?:string;
+  district?:string;
+  state?:string;
 }

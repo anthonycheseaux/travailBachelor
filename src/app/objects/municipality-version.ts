@@ -9,6 +9,7 @@ export class MunicipalityVersion {
   uri: string;
   name: string;
   municipality: number;
+  //true = active ; false = inactive
   state: boolean;
   canton: string;
   district: string;

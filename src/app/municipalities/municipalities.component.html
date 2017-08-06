@@ -1,11 +1,13 @@
-<div class="col-md-12 center-block" *ngIf="loading">
+<div id="loading-title" class="col-md-12 center-block" *ngIf="loading">
   <h3 class="text-center">Liste des communes</h3>
-  <md-spinner style="margin:0 auto;" mode="indeterminate"></md-spinner>
-</div>
 
-<div class="col-md-12 text-center" *ngIf="error" style="margin: 20px">
+  <!--Infinite rolling-->
+  <md-spinner style="margin:0 auto;" mode="indeterminate"></md-spinner>
+</div><!--loading-title-->
+
+<div id="error" class="col-md-12 text-center" *ngIf="error" style="margin: 20px">
   <span class="alert alert-danger">Erreur, veuillez essayez plus tard !</span>
-</div>
+</div><!--error-->
 
 <div class="col-md-12" *ngIf="!loading">
 
@@ -26,72 +28,82 @@
             <div class="panel-body">
               <form #filterForm class="form-horizontal">
 
-                <label class="control-label">Rechercher dans la liste</label>
-                <span
-                  mdTooltipPosition="above"
-                  mdTooltip="La recherche s'effectue uniquement parmi les noms de communes">
+                <div id="search">
+                  <label class="control-label">Rechercher dans la liste</label>
+                  <span
+                    mdTooltipPosition="above"
+                    mdTooltip="La recherche s'effectue uniquement parmi les noms de communes">
                   <i class="glyphicon glyphicon-question-sign small"></i>
                 </span>
-                <input
-                  class="form-control"
-                  #search
-                  (keyup)="municipalitiesTable.gtSearch(search.value)"
-                  placeholder="Nom de la commune">
+                  <input
+                    class="form-control"
+                    #search
+                    (keyup)="municipalitiesTable.gtSearch(search.value)"
+                    placeholder="Nom de la commune">
+                </div><!--Search-->
 
                 <hr>
 
-                <label class="control-label" for="canton">Cantons</label>
-                <select
-                  id="canton"
-                  class="form-control"
-                  #cantonName
-                  (change)="onChangeFilter(cantonName.value, districtName.value, stateName.value)" >
-                  <option>Tous les cantons</option>
-                  <option
-                    *ngFor="let canton of cantons"
-                    [ngValue]="canton">
-                    {{canton.name}}</option>
-                </select>
+                <div id="canton-filter">
+                  <label class="control-label" for="canton">Cantons</label>
+                  <select
+                    id="canton"
+                    class="form-control"
+                    #cantonName
+                    (change)="onChangeFilter(cantonName.value, districtName.value, stateName.value)" >
+                    <option>Tous les cantons</option>
+                    <option
+                      *ngFor="let canton of cantons"
+                      [ngValue]="canton">
+                      {{canton.name}}</option>
+                  </select>
+                </div><!--Canton filter-->
 
                 <hr>
 
-                <label class="control-label" for="district">Districts</label>
-                <span
-                  mdTooltipPosition="above"
-                  mdTooltip="Il est nécessaire de sélection un canton pour visualiser l'ensemble de ses districts">
+                <div id="district-filter">
+                  <label class="control-label" for="district">Districts</label>
+                  <span
+                    mdTooltipPosition="above"
+                    mdTooltip="Il est nécessaire de sélection un canton pour visualiser l'ensemble de ses districts">
                   <i class="glyphicon glyphicon-question-sign small"></i>
                 </span>
-                <select
-                  id="district"
-                  class="form-control"
-                  #districtName
-                  (change)="onChangeFilter(cantonName.value, districtName.value, stateName.value)"
-                  [disabled]="disableDistricts">
-                  <option>Tous les districts</option>
-                  <option
-                    *ngFor="let district of districts"
-                    [ngValue]="district">
-                    {{district.name}}</option>
-                </select>
+                  <select
+                    id="district"
+                    class="form-control"
+                    #districtName
+                    (change)="onChangeFilter(cantonName.value, districtName.value, stateName.value)"
+                    [disabled]="disableDistricts">
+                    <option>Tous les districts</option>
+                    <option
+                      *ngFor="let district of districts"
+                      [ngValue]="district">
+                      {{district.name}}</option>
+                  </select>
+                </div><!--District filter-->
 
                 <hr>
 
-                <label class="control-label" for="state">Satuts</label>
-                <span
-                  mdTooltipPosition="above"
-                  mdTooltip="Actif : Pastille verte; Inactif: Pastille rouge">
+                <div id="state-filter">
+                  <label class="control-label" for="state">Satuts</label>
+                  <span
+                    mdTooltipPosition="above"
+                    mdTooltip="Actif : Pastille verte; Inactif: Pastille rouge">
                   <i class="glyphicon glyphicon-question-sign small"></i>
                 </span>
-                <select
-                  id="state"
-                  class="form-control"
-                  #stateName
-                  (change)="onChangeFilter(cantonName.value, districtName.value, stateName.value)">
-                  <option>Tous les statuts</option>
-                  <option *ngFor="let state of states" [ngValue]="state">{{state}}</option>
-                </select>
+                  <select
+                    id="state"
+                    class="form-control"
+                    #stateName
+                    (change)="onChangeFilter(cantonName.value, districtName.value, stateName.value)">
+                    <option>Tous les statuts</option>
+                    <option *ngFor="let state of states" [ngValue]="state">{{state}}</option>
+                  </select>
+                </div><!--State filter-->
 
                 <hr>
+
+                <!--Reset button-->
                 <div align="center">
                   <a class="btn btn-info"
                      (click)="filterForm.reset();
@@ -107,10 +119,7 @@
           </div>
         </div>
       </div>
-      <div class="row"><div class="col-md-12"><br></div></div>
-
-
-    </div>
+    </div><!--filters-->
 
     <div id="result-table" class="col-md-9">
 
@@ -134,7 +143,7 @@
 
           par page
         </div>
-      </div>
+      </div><!--row-->
 
       <generic-table
         [gtSettings]="configObject.settings"
@@ -153,8 +162,8 @@
           [gtClasses]="'pagination-sm justify-content-center'"
           [genericTable]="municipalitiesTable"></gt-pagination>
       </div>
-    </div>
+    </div><!--Result table-->
 
-  </div>
+  </div><!--Row-->
 
-</div>
+</div><!--col-md-12-->

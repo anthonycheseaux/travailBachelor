@@ -3,7 +3,6 @@ import { NgModule } from '@angular/core';
 
 import { AppComponent } from './app.component';
 import { HomeComponent } from './home/home.component';
-import { ErrorPageComponent } from './error-page/error-page.component';
 import { MunicipalitiesComponent } from './municipalities/municipalities.component';
 import {ArchivalResourcesComponent} from './archival-resources/archival-resources.component';
 import { AppRoutingModule } from './modules/app.routing.module';
@@ -27,7 +26,6 @@ import { AboutComponent } from './about/about.component';
   declarations: [
     AppComponent,
     HomeComponent,
-    ErrorPageComponent,
     MunicipalitiesComponent,
     ArchivalResourcesComponent,
     CustomRowComponent,

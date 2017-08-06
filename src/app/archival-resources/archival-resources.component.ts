@@ -66,8 +66,6 @@ export class ArchivalResourcesComponent implements OnInit, OnDestroy {
   getArchivalResourcesMatchingNamesSubscription: Subscription;
   routeSubscription: Subscription;
 
-  historyCheckBoxValues: string[];
-
   error: boolean;
 
   archivalResourcesTemp: ArchivalResources[];
@@ -109,19 +107,14 @@ export class ArchivalResourcesComponent implements OnInit, OnDestroy {
       new ArchivalResources(2125911, "http://data.alod.ch/bar/id/archivalresource/2125911", "Leutnant Wolfender, Aadorf", "E5001F#1000/1851#2353*", 1950, null),
       new ArchivalResources(2397965, "http://data.alod.ch/bar/id/archivalresource/2397965", "	Projekt-Nr. 20-133: Kanton Thurgau, Tiefbauamt, Guntershausen: Ausbau der Staatstrasse Aadorf-Guntershausen", "E7291B#1980/16#1815*", 1976, 1977)
     ]
-
-    console.log("constructor");
   }
 
   ngOnInit() {
-    console.log("ngOnInit");
-
     this.loading = true;
 
     this.routeSubscription =
       this.route.params.subscribe(
         (params: Params) => {
-          console.log("route params");
 
           this.loading = true;
 
@@ -130,7 +123,6 @@ export class ArchivalResourcesComponent implements OnInit, OnDestroy {
           this.getAllMunicipalitiesSubscription =
             this.municipalitiesService.getAllMunicipalities().subscribe(
               (elements: any[]) => {
-                console.log("getAllMun");
                 this.options = elements;
               },
               (error) => {
@@ -150,12 +142,10 @@ export class ArchivalResourcesComponent implements OnInit, OnDestroy {
                 this.history = this.constructHistory(this.related);
 
                 this.historyCheckBoxField = [this.currentMunicipalityVersion.name];
-                this.historyCheckBoxValues = [this.currentMunicipalityVersion.name];
 
                 for(let element of this.related){
                   if(this.historyCheckBoxField.indexOf(element.name) == -1){
                     this.historyCheckBoxField.push(element.name);
-                    this.historyCheckBoxValues.push(element.name);
                   }
                 }
 
@@ -220,7 +210,6 @@ export class ArchivalResourcesComponent implements OnInit, OnDestroy {
         if (!r.state && w.name != r.name && w.admissionMutation.id == r.abolitionMutation.id) {
           if(!history.find(x => x.id == r.id)){
             history.push({
-              'label': "other",
               'name': r.name,
               'id': r.id,
               'date': r.abolitionMutation.date,
@@ -231,7 +220,6 @@ export class ArchivalResourcesComponent implements OnInit, OnDestroy {
         if (!w.state && w.name != r.name && w.abolitionMutation.id == r.admissionMutation.id) {
           if(!history.find(x => x.id == r.id)){
             history.push({
-              'label': "other",
               'name': r.name,
               'id': r.id,
               'date': r.admissionMutation.date,
@@ -258,28 +246,28 @@ export class ArchivalResourcesComponent implements OnInit, OnDestroy {
   }
 
   private getRelatedVersions(current: MunicipalityVersion): MunicipalityVersion[] {
-    let sameM: MunicipalityVersion[] = [];
+    let versionsWithSameMunicipality: MunicipalityVersion[] = [];
 
     for (const option of this.options) {
       if (current.municipality == option.municipality) {
-        sameM.push(option);
+        versionsWithSameMunicipality.push(option);
       }
     }
 
     let related: MunicipalityVersion[] = [];
 
-    for (const same of sameM) {
+    for (const version of versionsWithSameMunicipality) {
       for (const option of this.options) {
-        if (same.abolitionMutation) {
+        if (version.abolitionMutation) {
           if (related.indexOf(option) == -1) {
-            if (same.abolitionMutation.id == option.admissionMutation.id) {
+            if (version.abolitionMutation.id == option.admissionMutation.id) {
               related.push(option);
             }
           }
         }
         if (option.abolitionMutation) {
           if (related.indexOf(option) == -1) {
-            if (same.admissionMutation.id == option.abolitionMutation.id) {
+            if (version.admissionMutation.id == option.abolitionMutation.id) {
               related.push(option);
             }
           }
@@ -290,44 +278,46 @@ export class ArchivalResourcesComponent implements OnInit, OnDestroy {
   }
 
   private getActive(currentVersion: MunicipalityVersion): MunicipalityVersion {
-    let active: MunicipalityVersion = null;
     let relatedVersions: MunicipalityVersion[];
 
     //Test if current is an active version
-    if(!currentVersion.abolitionMutation){
+    if(currentVersion.state){
       return currentVersion;
     }
 
     //Get related versions of current
     relatedVersions = this.getRelatedVersions(currentVersion);
 
-    //Search active version
+    //Search active version in related
     for (let version of relatedVersions) {
-      if (!version.abolitionMutation) {
-        active = version;
+      if (version.state) {
+        return version;
       }
     }
 
-    if(active)
-      return active;
+    //Launch get active with most recent related version
+    return this.getActive(this.getMostRecentVersion(relatedVersions));
+  }
 
-    if(relatedVersions.length > 1){
-      //Sort the table, first element is most recent
-      relatedVersions.sort((a: any, b: any) => {
-        if (a.abolitionMutation.date > b.abolitionMutation.date) {
-          return -1;
-        }
-        else if (a.abolitionMutation.date < b.abolitionMutation.date) {
-          return 1;
-        }
-        else {
-          return 0;
-        }
-      });
+  private getMostRecentVersion(versions: MunicipalityVersion[]): MunicipalityVersion{
+    if(versions.length < 1){
+      return versions[0];
     }
 
-    //Launch get active with most recent related version
-    return this.getActive(relatedVersions[0]);
+    //Sort the table, first element is most recent
+    versions.sort((a: any, b: any) => {
+      if (a.abolitionMutation.date > b.abolitionMutation.date) {
+        return -1;
+      }
+      else if (a.abolitionMutation.date < b.abolitionMutation.date) {
+        return 1;
+      }
+      else {
+        return 0;
+      }
+    });
+
+    return versions[0];
   }
 
   private constructListSettings(): any[]{
@@ -349,19 +339,13 @@ export class ArchivalResourcesComponent implements OnInit, OnDestroy {
       search: true
     },{
       objectKey:'startDate',
-      sort:'disable',
+      sort:'enable',
       columnOrder:3,
       search: false
     },{
       objectKey: 'endDate',
-      sort: 'disable',
+      sort: 'enable',
       columnOrder: 4,
-      search: false
-    },{
-      objectKey: 'abolitionLabel',
-      sort: 'disable',
-      visible: true,
-      columnOrder: 5,
       search: false
     },{
       objectKey: 'swissArchiveButton',

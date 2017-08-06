@@ -1,3 +1,4 @@
+import {isDefined} from "@angular/compiler/src/util";
 /**
  * Mutation object
  */
@@ -11,7 +12,14 @@ export class Mutation {
     this.id = id;
     this.uri = uri;
     this.date = date;
-    this.mutationLabel = ConceptLabel[mutationId];
+
+    if(ConceptLabel[mutationId]){
+      this.mutationLabel = ConceptLabel[mutationId];
+    }
+    else {
+      this.mutationLabel = ConceptLabel[-1];
+    }
+
   }
 
 }
