@@ -90,7 +90,7 @@ export class MunicipalitiesComponent implements OnInit, OnDestroy {
           this.error = true;
         },
 
-        //On complete the observable
+        //On complete
         () => {
           //Get the distinct municipalities for the displaying in the table
           this.distinctMunicipalities = this.municipalitiesService.getDistinctMunicipalities(this.allMunicipalitiyVersions);
@@ -121,7 +121,7 @@ export class MunicipalitiesComponent implements OnInit, OnDestroy {
   }
 
   /**
-   * Used to manage object's instances to destroy
+   * Manage destroy phase in lifecycle
    */
   ngOnDestroy() {
 

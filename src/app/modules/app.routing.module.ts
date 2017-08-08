@@ -1,11 +1,9 @@
 import {NgModule} from "@angular/core";
 import {RouterModule, Routes} from "@angular/router";
 import {HomeComponent} from "../home/home.component";
-import {ErrorPageComponent} from "../error-page/error-page.component";
 import {MunicipalitiesComponent} from "../municipalities/municipalities.component";
 import {ArchivalResourcesComponent} from "../archival-resources/archival-resources.component";
 import {AboutComponent} from "../about/about.component";
-import {MunicipalitiesService} from "../municipalities/municipalities.service";
 
 /**
  * Defining the routes used in the app :

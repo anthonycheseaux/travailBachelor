@@ -1,28 +1,29 @@
 <div id="loading" class="col-md-12 center-block" *ngIf="loading">
-  <h3 class="text-center">Chargement des unités de descriptions</h3>
+  <h3 class="text-center">Chargement des unités de description</h3>
   <md-spinner style="margin:0 auto;" mode="indeterminate"></md-spinner>
 </div><!--loading-->
 
-<div class="col-md-12 text-center" *ngIf="error" style="margin: 20px">
+<div id="error" class="col-md-12 text-center" *ngIf="error" style="margin: 20px">
   <span class="alert alert-danger">Erreur, veuillez essayez plus tard !</span>
-</div>
+</div><!--error-->
 
 <div id="loaded" *ngIf="!loading">
   <h3 class="text-center">
-    Unités de descriptions
+    Unités de description
     <span
       mdTooltip="Ressources des archives fédérales suisses contenant le nom de la commune sélectionnée et des communes composant son histoire.">
       <i class="glyphicon glyphicon-question-sign small"></i>
     </span>
   </h3>
 
+  <!--Show important informations of the selected municipality version-->
   <h4 class="text-center">
     {{currentMunicipalityVersion ? (currentMunicipalityVersion.name | uppercase) : ''}},
     {{currentMunicipalityVersion ? currentMunicipalityVersion.canton : ''}},
     {{currentMunicipalityVersion ? currentMunicipalityVersion.district : ''}}
   </h4>
 
-  <div class="row">
+  <div id="mainContent" class="row">
 
     <div id="filters" class="col-md-3">
       <div class="panel-group">
@@ -31,10 +32,11 @@
             <h4 class="panel-title">
               <a data-toggle="collapse" href="#collapseFilters" class="toggle">Filtres</a>
             </h4>
-          </div>
+          </div><!--panel heading-->
           <div id="collapseFilters" class="panel-collapse collapse in">
             <div class="panel-body">
               <form #filterForm class="form-horizontal">
+                <!--Filter on history-->
                 <label class="control-label">Histoire</label>
                 <select
                   id="historyName"
@@ -50,6 +52,7 @@
 
                 <hr>
 
+                <!--Filter on periods-->
                 <label class="control-label">Période</label>
                 <div class="input-group">
                   <select
@@ -77,17 +80,18 @@
                   </select>
                 </div>
 
+                <!--Error message-->
                 <div *ngIf="invalidPeriod" class="text-center" style="margin: 5px">
                   <p class="alert alert-danger">{{invalidPeriodMessage}}</p>
                 </div>
 
                 <hr>
 
+                <!--Reset button-->
                 <div align="center">
                   <a class="btn btn-info"
                      (click)="filterForm.reset();
                     onChangeFilter(startDate.value, endDate.value, historyName.value);">
-                    <!--municipalitiesTable.gtClearFilter();-->
                     Réinitialitiser les filtres
                   </a>
                 </div>
@@ -98,7 +102,7 @@
         </div>
       </div>
       <div class="row"><div class="col-md-12"><br></div></div>
-    </div>
+    </div><!--Filters-->
 
     <div id="result-table" class="col-md-9">
 
@@ -136,17 +140,19 @@
         noMatchingData:'Aucune donnée correspondante trouvée'}"
         #archivalResourcesTable></generic-table>
 
+      <!--pagination-->
       <div class="text-center">
         <gt-pagination
           [gtClasses]="'pagination-sm justify-content-center'"
           [genericTable]="archivalResourcesTable"></gt-pagination>
       </div>
-    </div>
+    </div><!--result table-->
 
-  </div><!--row-->
+  </div><!--mainContent row-->
 
-  <div class="row">
+  <div id="bottomContent" class="row">
 
+    <!--History of the municipality-->
     <div id="history" class="col-md-6">
 
       <div class="panel-group" >
@@ -210,6 +216,7 @@
       </div>
     </div>
 
+    <!--Map centered on the municipality showing boundaries-->
     <div id="map" class="col-md-6" *ngIf="mapActive">
 
       <div class="panel-group" >
@@ -222,6 +229,7 @@
           <div id="collapseMap" class="panel-collapse collapse in">
             <div class="panel-body">
               <div >
+                <!--require a sanitized url-->
                 <iframe
                   [src]='sanitizer.bypassSecurityTrustResourceUrl(mapUrl)'
                   width="500px"
@@ -235,11 +243,9 @@
         </div>
       </div>
       <div class="row"><div class="col-md-12"><br></div></div>
-
-
     </div>
 
-  </div><!--row-->
+  </div><!--bottomContent row-->
 </div><!--loaded-->
 
 

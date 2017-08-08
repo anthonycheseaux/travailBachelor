@@ -1,32 +1,25 @@
 <div class="row text-center">
-  <div class="col-md-12">
+  <div id="titless" class="col-md-12">
     <h2>
       <span>Retrouvez votre commune</span>
       <br>
       <span>dans les Archives fédérales suisses</span>
     </h2>
-  </div>
+  </div><!--Titles-->
 
-  <div class="col-md-12 text-center" *ngIf="error" style="margin: 20px">
+  <div id="error" class="col-md-12 text-center" *ngIf="error" style="margin: 20px">
     <span class="alert alert-danger">Erreur, veuillez essayez plus tard !</span>
-  </div>
+  </div><!--Error-->
 
   <div class="col-md-12" *ngIf="!error">
-    <h4>
-      Rechercher parmi les communes actives
-      <span
-        mdTooltipPosition="above"
-        mdTooltip="Pour accéder aux communes actives et radiées, se rendre à la page &quot;Liste des communes&quot;">
-        <i class="glyphicon glyphicon-question-sign small"></i>
-      </span>
-    </h4>
+    <!--Auto complete input-->
     <md-input-container>
       <input
         mdInput placeholder="Commune"
         size="40px"
         [mdAutocomplete]="tdAuto"
         [(ngModel)]="currentMunicipality.name"
-        (ngModelChange)="tdMunicipalities = filterStates(currentMunicipality.name)">
+        (ngModelChange)="tdMunicipalities = filterMunicipalities(currentMunicipality.name)">
     </md-input-container>
 
     <a class="btn btn-primary"
@@ -34,6 +27,7 @@
       Rechercher
     </a>
 
+    <!--Auto complete list-->
     <md-autocomplete #tdAuto="mdAutocomplete">
       <md-option *ngFor="let municipality of tdMunicipalities" [value]="municipality.name">
         <span>{{ municipality.name }}</span>
@@ -42,17 +36,19 @@
 
     <br>
 
+    <!--Manage wrong municipality name-->
     <div *ngIf="invalidName" style="display: inline-block">
       <p class="alert alert-danger">{{message}}</p>
     </div>
 
     <br>
 
+    <!--Lunks for naviagation-->
     <div id="links">
       <h5><a routerLink="municipalities">Liste des communes suisses</a></h5>
       <br>
       <h5><a routerLink="about">À propos du prototype</a></h5>
     </div>
-  </div>
+  </div><!--col-md-12-->
 </div>
 

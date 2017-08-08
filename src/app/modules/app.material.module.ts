@@ -15,10 +15,8 @@ import {NgModule} from "@angular/core";
  */
 @NgModule({
   imports: [
-    MdButtonModule,
     MdInputModule,
     MdAutocompleteModule,
-    MdListModule,
     MdProgressSpinnerModule,
     MdTooltipModule
   ],
@@ -26,7 +24,6 @@ import {NgModule} from "@angular/core";
     MdButtonModule,
     MdInputModule,
     MdAutocompleteModule,
-    MdListModule,
     MdProgressSpinnerModule,
     MdTooltipModule
   ],

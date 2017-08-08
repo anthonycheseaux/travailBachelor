@@ -9,17 +9,13 @@ import {GenericTableComponent, GtConfig} from "@angular-generic-table/core";
 import {CustomRowComponent} from "../custom-row/custom-row.component";
 import {Subscription} from "rxjs";
 
-/**
- * Interface used to manage filters on applied on the list
- */
-interface IFilters{
-  title?:string[];
-  startDate?:number[];
-  endDate?:number[];
-}
-
+//URL for the Swiss archive app, add archival resource id
 const swissArchiveURL: string = 'https://www.swiss-archives.ch/detail.aspx?id=';
+const mapURL: string = '//map.geo.admin.ch/?ch.swisstopo.swissboundaries3d-gemeinde-flaeche.fill=';
 
+/**
+ * Component used to manage archival resources
+ */
 @Component({
   selector: 'app-archival-resources',
   templateUrl: './archival-resources.component.html',
@@ -28,18 +24,24 @@ const swissArchiveURL: string = 'https://www.swiss-archives.ch/detail.aspx?id=';
 })
 export class ArchivalResourcesComponent implements OnInit, OnDestroy {
 
+  //Table
   @ViewChild(GenericTableComponent)
   private archivalResourcesTable: GenericTableComponent<any, CustomRowComponent>;
 
+  //Loading managing
   loading: boolean;
-  options: MunicipalityVersion[];
+
+  //all municipalities
+  municipalities: MunicipalityVersion[];
+
+  //current municipality version
   versionId: number;
   currentMunicipalityVersion: MunicipalityVersion;
-  archivalResources: ArchivalResources[];
-  related: MunicipalityVersion[];
-  active: MunicipalityVersion;
 
-  //Period
+  //related archival resources
+  archivalResources: ArchivalResources[];
+
+  //Period filters
   startPeriod: number[];
   startPeriodFilter: number[];
   endPeriod: number[];
@@ -50,10 +52,11 @@ export class ArchivalResourcesComponent implements OnInit, OnDestroy {
   //History
   history: any[];
   historyCheckBoxField: string[];
+  related: MunicipalityVersion[];
+  active: MunicipalityVersion;
 
   //Map
   mapActive: boolean = false;
-  mapPartialUrl: string = '//map.geo.admin.ch/?ch.swisstopo.swissboundaries3d-gemeinde-flaeche.fill=';
   mapUrl: string;
 
   //List
@@ -66,15 +69,24 @@ export class ArchivalResourcesComponent implements OnInit, OnDestroy {
   getArchivalResourcesMatchingNamesSubscription: Subscription;
   routeSubscription: Subscription;
 
+  //error display management
   error: boolean;
 
-  archivalResourcesTemp: ArchivalResources[];
-
+  /**
+   * Constructor
+   * @param sanitizer to secure SwissArchive URL
+   * @param route DI to manage query string
+   * @param router DI to manage routing
+   * @param archivalResourcesService DI to manage data archival resources
+   * @param municipalitiesService DI to manage data municipalities
+   */
   constructor(public sanitizer: DomSanitizer,
               private route: ActivatedRoute,
               private router: Router,
               private archivalResourcesService: ArchivalResourcesService,
               private municipalitiesService: MunicipalitiesService) {
+
+    //Initializations
     this.settings = this.constructListSettings();
     this.fields = this.constructListFields();
     this.configObject = null;
@@ -89,8 +101,10 @@ export class ArchivalResourcesComponent implements OnInit, OnDestroy {
     this.invalidPeriod = false;
     this.invalidPeriodMessage = 'La période sélectionnée n\'est pas valide !';
 
+    //get the current year
     let currentYear: number = new Date().getFullYear();
 
+    //Fill tab with current years from 1000 to now
     for(let i=1000; i<currentYear; i++){
       this.startPeriodFilter.push(i);
       this.endPeriodFilter.push(i);
@@ -100,43 +114,45 @@ export class ArchivalResourcesComponent implements OnInit, OnDestroy {
       this.startPeriod.push(i);
       this.endPeriod.push(i);
     }
-
-    this.archivalResourcesTemp = [
-      new ArchivalResources(1288432, "http://data.alod.ch/bar/id/archivalresource/1288432", "Thurgau. Abwässer aus der Putzfädenfabrik & Wäscherei Ernst Ruckstuhl in Friedtal-Aawangen", "E3270A#1000/755#611*", 1930, null),
-      new ArchivalResources(3354901, "http://data.alod.ch/bar/id/archivalresource/3354901", "TG 8320001, Parz. Nr. 349 Militäranlagen Munitionsdepo Simmen - Ettenhausen", "E3360-02#2006/1#3910*", 1983	, 1983),
-      new ArchivalResources(2125911, "http://data.alod.ch/bar/id/archivalresource/2125911", "Leutnant Wolfender, Aadorf", "E5001F#1000/1851#2353*", 1950, null),
-      new ArchivalResources(2397965, "http://data.alod.ch/bar/id/archivalresource/2397965", "	Projekt-Nr. 20-133: Kanton Thurgau, Tiefbauamt, Guntershausen: Ausbau der Staatstrasse Aadorf-Guntershausen", "E7291B#1980/16#1815*", 1976, 1977)
-    ]
   }
 
+  /**
+   * Initialisation of the component that happen after the constructor method
+   */
   ngOnInit() {
     this.loading = true;
 
+    //Load of the municipality id using the route method subscription
     this.routeSubscription =
       this.route.params.subscribe(
-        (params: Params) => {
+        //Get the id in query string
+        (params: Params) => this.versionId = params['id'],
 
-          this.loading = true;
+        //If error happend
+        (error) => {
+          console.log(error);
+          this.error = true;
+        },
 
-          this.versionId = params['id'];
-
+        //on complete
+        () => {
           this.getAllMunicipalitiesSubscription =
             this.municipalitiesService.getAllMunicipalities().subscribe(
               (elements: any[]) => {
-                this.options = elements;
+                this.municipalities = elements;
               },
               (error) => {
                 console.log(error);
                 this.error = true;
               },
               () => {
-                this.currentMunicipalityVersion = this.options.find(x => x.id == this.versionId);
+                this.currentMunicipalityVersion = this.municipalities.find(x => x.id == this.versionId);
 
                 this.related = this.getRelatedVersions(this.currentMunicipalityVersion);
 
                 this.active = this.getActive(this.currentMunicipalityVersion);
                 //Active Municipality for the map
-                this.mapUrl = this.mapPartialUrl + this.active.municipality;
+                this.mapUrl = this.mapUrl + this.active.municipality;
                 this.mapActive = true;
 
                 this.history = this.constructHistory(this.related);
@@ -152,21 +168,11 @@ export class ArchivalResourcesComponent implements OnInit, OnDestroy {
                 this.afterLoadRelated(this.related);
               }
             );
-        },
-        (error) => {
-          console.log(error);
-          this.error = true;
-        });
-
-    /*this.route.params.subscribe(
-     (params: Params) => {
-     this.versionId = params['id'];
-     this.getRelatedMunicipalities(this.versionId);
-     }
-     );*/
+        })
   }
 
   ngOnDestroy() {
+    //destroy subscriptions
     if(this.getAllMunicipalitiesSubscription)
       this.getAllMunicipalitiesSubscription.unsubscribe();
     if(this.routeSubscription)
@@ -175,6 +181,10 @@ export class ArchivalResourcesComponent implements OnInit, OnDestroy {
       this.getArchivalResourcesMatchingNamesSubscription.unsubscribe();
   }
 
+  /**
+   *
+   * @param related
+   */
   private afterLoadRelated(related: MunicipalityVersion[]): void {
     this.archivalResourcesService
       .getArchivalResourcesMatchingNames(this.currentMunicipalityVersion, related)
@@ -191,6 +201,11 @@ export class ArchivalResourcesComponent implements OnInit, OnDestroy {
       );
   }
 
+  /**
+   *
+   * @param related
+   * @returns {any[]}
+   */
   private constructHistory(related: MunicipalityVersion[]): any[] {
     let history: any[] = [];
     let work: MunicipalityVersion[] = [];
@@ -245,30 +260,35 @@ export class ArchivalResourcesComponent implements OnInit, OnDestroy {
     return history;
   }
 
+  /**
+   *
+   * @param current
+   * @returns {MunicipalityVersion[]}
+   */
   private getRelatedVersions(current: MunicipalityVersion): MunicipalityVersion[] {
     let versionsWithSameMunicipality: MunicipalityVersion[] = [];
 
-    for (const option of this.options) {
-      if (current.municipality == option.municipality) {
-        versionsWithSameMunicipality.push(option);
+    for (const municipality of this.municipalities) {
+      if (current.municipality == municipality.municipality) {
+        versionsWithSameMunicipality.push(municipality);
       }
     }
 
     let related: MunicipalityVersion[] = [];
 
     for (const version of versionsWithSameMunicipality) {
-      for (const option of this.options) {
+      for (const municipality of this.municipalities) {
         if (version.abolitionMutation) {
-          if (related.indexOf(option) == -1) {
-            if (version.abolitionMutation.id == option.admissionMutation.id) {
-              related.push(option);
+          if (related.indexOf(municipality) == -1) {
+            if (version.abolitionMutation.id == municipality.admissionMutation.id) {
+              related.push(municipality);
             }
           }
         }
-        if (option.abolitionMutation) {
-          if (related.indexOf(option) == -1) {
-            if (version.admissionMutation.id == option.abolitionMutation.id) {
-              related.push(option);
+        if (municipality.abolitionMutation) {
+          if (related.indexOf(municipality) == -1) {
+            if (version.admissionMutation.id == municipality.abolitionMutation.id) {
+              related.push(municipality);
             }
           }
         }
@@ -277,6 +297,11 @@ export class ArchivalResourcesComponent implements OnInit, OnDestroy {
     return related;
   }
 
+  /**
+   *
+   * @param currentVersion
+   * @returns {MunicipalityVersion}
+   */
   private getActive(currentVersion: MunicipalityVersion): MunicipalityVersion {
     let relatedVersions: MunicipalityVersion[];
 
@@ -299,6 +324,11 @@ export class ArchivalResourcesComponent implements OnInit, OnDestroy {
     return this.getActive(this.getMostRecentVersion(relatedVersions));
   }
 
+  /**
+   *
+   * @param versions
+   * @returns {MunicipalityVersion}
+   */
   private getMostRecentVersion(versions: MunicipalityVersion[]): MunicipalityVersion{
     if(versions.length < 1){
       return versions[0];
@@ -320,6 +350,10 @@ export class ArchivalResourcesComponent implements OnInit, OnDestroy {
     return versions[0];
   }
 
+  /**
+   *
+   * @returns {[{objectKey: string, sort: string, visible: boolean, columnOrder: number, search: boolean},{objectKey: string, sort: string, columnOrder: number, search: boolean},{objectKey: string, sort: string, columnOrder: number, search: boolean},{objectKey: string, sort: string, columnOrder: number, search: boolean},{objectKey: string, sort: string, columnOrder: number, search: boolean},{objectKey: string, columnOrder: number, sort: string, search: boolean}]}
+   */
   private constructListSettings(): any[]{
     return [{
       objectKey:'id',
@@ -355,6 +389,10 @@ export class ArchivalResourcesComponent implements OnInit, OnDestroy {
     }];
   }
 
+  /**
+   *
+   * @returns {[{name: string, objectKey: string, classNames: string},{name: string, objectKey: string, classNames: string},{name: string, objectKey: string, classNames: string, value: ((row:any)=>(number[]|number|string))},{name: string, objectKey: string, classNames: string, value: ((row:any)=>(number[]|number|string))},{objectKey: string, name: string, value: (()=>string), render: (()=>string), click: ((row:any)=>Window)}]}
+   */
   private constructListFields(): any[]{
     return [{
       name:'Signature',
@@ -393,6 +431,12 @@ export class ArchivalResourcesComponent implements OnInit, OnDestroy {
     }];
   }
 
+  /**
+   * 
+   * @param startDate
+   * @param endDate
+   * @param historyName
+   */
   private onChangeFilter(startDate, endDate, historyName){
     console.log(startDate + " " + endDate + " " + historyName);
 
@@ -435,4 +479,13 @@ export class ArchivalResourcesComponent implements OnInit, OnDestroy {
     this.archivalResourcesTable.gtApplyFilter(filters);
     this.archivalResourcesTable.gtSearch(historyName);
   }
+}
+
+/**
+ * Interface used to manage filters on applied on the list
+ */
+interface IFilters{
+  title?:string[];
+  startDate?:number[];
+  endDate?:number[];
 }
