@@ -4,7 +4,7 @@
 </div><!--loading-->
 
 <div id="error" class="col-md-12 text-center" *ngIf="error" style="margin: 20px">
-  <span class="alert alert-danger">Erreur, veuillez essayez plus tard !</span>
+  <span class="alert alert-danger">Erreur, veuillez essayer plus tard !</span>
 </div><!--error-->
 
 <div id="loaded" *ngIf="!loading">
@@ -170,12 +170,12 @@
                   {{currentMunicipalityVersion.canton}},
                   {{currentMunicipalityVersion.district}}
                 </p>
-                <p>Statut : {{currentMunicipalityVersion.state}}</p>
-                <p>
+                <p>Statut : {{currentMunicipalityVersion.state ? 'Actif' : 'Inactif'}}</p>
+                <!--<p>
                   Admission :
                   {{currentMunicipalityVersion.admissionMutation.date }}
                   {{currentMunicipalityVersion.admissionMutation.mutationLabel}}
-                </p>
+                </p>-->
                 <p *ngIf="currentMunicipalityVersion.id != active.id">
                   Radiation :
                   {{currentMunicipalityVersion.abolitionMutation ? currentMunicipalityVersion.abolitionMutation.date : ''}}

@@ -101,13 +101,13 @@ export class MunicipalitiesComponent implements OnInit, OnDestroy {
           //Get cantons and districts from the service
           this.getCantonDistrictSubscription =
             this.municipalitiesService.getCantonsDistricts().subscribe(
-              //Result in compenent object
+              //Result in component object
               (elements: any[]) => this.cantons = elements,
 
               //On error management
               (error) => {
                 console.log(error);
-                //Informaiton in UI
+                //Information in UI
                 this.error = true;
               },
 

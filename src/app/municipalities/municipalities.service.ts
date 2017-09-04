@@ -98,7 +98,7 @@ export class MunicipalitiesService {
         '} ' +
         'ORDER BY ASC (?name) DESC (?adDate)';
 
-      //Encode the request ans add to the endpoint query url
+      //Encode the request and add to the endpoint query url
       let getUrl = endpointUrl+encodeURIComponent(query);
 
       //Send the request via HTTP protocol with the headers
@@ -161,6 +161,7 @@ export class MunicipalitiesService {
             this.municipalities = elements;
             return this.municipalities;
           }
+          //create on observable of the array of municipalities
         ).share();
 
       return this.municipalitiesObservable;
@@ -379,170 +380,4 @@ export class MunicipalitiesService {
     return distinctMunicipalities;
   }
 
-/*  /!**
-   * @deprecated
-   *!/
-  getActiveMunicipalities() {
-
-    let query:string =
-      'PREFIX gont: <https://gont.ch/>' +
-      'SELECT ?version ?id ?name ?municipalityId ?cantonName ?districtName ?adEvent ?adId ?adDate ?adLabel ' +
-      'FROM <https://linked.opendata.swiss/graph/eCH-0071> ' +
-      'WHERE { ' +
-      '?municipality a gont:PoliticalMunicipality; ' +
-      'gont:id ?municipalityId. ' +
-      '?version a gont:MunicipalityVersion; ' +
-      'gont:municipality ?municipality ; ' +
-      'gont:longName ?name; ' +
-      'gont:id ?id; ' +
-      'gont:canton ?canton; ' +
-      'gont:district ?d; ' +
-      'gont:admissionEvent ?adEvent; ' +
-      'gont:admissionMode ?adMode. ' +
-      '?canton gont:longName ?cantonName. ' +
-      '?d gont:longName ?districtName. ' +
-      '?adEvent gont:date ?adDate; ' +
-      'gont:id ?adId. ' +
-      '?adMode skos:notation ?adLabel. ' +
-      'MINUS{ ' +
-      '?version gont:abolitionEvent ?abEvent. ' +
-      '} ' +
-      '} ' +
-      'ORDER BY ASC (?name) DESC (?adDate)';
-
-    let getUrl = endpointUrl+encodeURIComponent(query);
-
-    return this.http.get(getUrl, {headers: MunicipalitiesService.getHeaders()})
-      .map(
-        (response: Response) => {
-          let data = response.json().results.bindings;
-          let elements: MunicipalityVersion[] = [];
-
-          //console.log(data);
-
-          let abolitionMutation: Mutation = new Mutation(null, null, null, -1);
-          let admissionMutation: Mutation;
-
-          for(const e of data){
-            admissionMutation = new Mutation(
-              e.adId.value,
-              e.adEvent.value,
-              e.adDate.value,
-              +e.adLabel.value
-            );
-
-            elements.push(new MunicipalityVersion(
-              e.id.value,
-              e.version.value,
-              e.name.value,
-              e.municipalityId.value,
-              true,
-              e.cantonName.value,
-              e.districtName.value,
-              admissionMutation,
-              abolitionMutation
-            ));
-          }
-
-          //console.log(elements);
-          return elements;
-        }
-      );
-  }
-
-  /!**
-   * @deprecated
-   *!/
-  getHistory(uris: string){
-
-    //SPARQL request
-    let query:string =
-      'SELECT ?version ?id ?name ?cantonName ?districtName ?adDate ?adLabel ?abDate ?abLabel ' +
-      'FROM  <https://linked.opendata.swiss/graph/eCH-0071> ' +
-      'WHERE { ' +
-      'VALUES ?version {'+ uris +'} ' +
-      '?version a gont:MunicipalityVersion; ' +
-      'gont:id ?id; ' +
-      'gont:longName ?name; ' +
-      ' gont:canton ?c; ' +
-      'gont:district ?d; ' +
-      'gont:admissionEvent ?adEvent; ' +
-      'gont:admissionMode ?adMode. ' +
-      '?c gont:longName ?cantonName. ' +
-      '?d gont:longName ?districtName. ' +
-      '?adEvent gont:date ?adDate. ' +
-      '?adMode skos:prefLabel ?adLabel. ' +
-      'OPTIONAL{ ' +
-      '?version gont:abolitionEvent ?abEvent; ' +
-      'gont:abolitionMode ?abMode. ' +
-      '?abEvent gont:date ?abDate. ' +
-      '?abMode skos:prefLabel ?abLabel. ' +
-      '} ' +
-      '}';
-
-    //encode the request and add it to the endpoint URL
-    let getUrl = endpointUrl+encodeURIComponent(query);
-
-    return this.http.get(getUrl, {headers: MunicipalitiesService.getHeaders()})
-      .map(
-        (response: Response) => {
-          let data = response.json().results.bindings;
-          let elements: MunicipalityVersion[] = [];
-
-          console.log(data);
-
-          for (const e of data) {
-
-          }
-
-          return elements;
-        }
-      );
-  }
-
-  /!**
-   * @deprecated
-   *!/
-  getRelatedMunicipalities(id: number){
-    let query:string = 'SELECT distinct ?otherVersion ?otherVersionLabel ' +
-      'FROM  <https://linked.opendata.swiss/graph/eCH-0071> ' +
-      'WHERE { ' +
-      '?currentVersion a gont:MunicipalityVersion; ' +
-      'gont:id '+ id +' . ' +
-      '?municipality a gont:PoliticalMunicipality; ' +
-      'gont:municipalityVersion ?currentVersion; ' +
-      'gont:municipalityVersion ?version. ' +
-      '{ ' +
-      '?version gont:admissionEvent ?versionAdmissionEvent. ' +
-      '?version gont:admissionMode ?versionAdmissionMode. ' +
-      '?otherVersion a gont:MunicipalityVersion; ' +
-      'gont:abolitionEvent ?versionAdmissionEvent; ' +
-      'gont:longName ?otherVersionLabel. ' +
-      '} ' +
-      'UNION ' +
-      '{ ' +
-      '?version gont:abolitionEvent ?versionAbolitionEvent. ' +
-      '?version gont:abolitionMode ?versionAbolitionMode. ' +
-      '?otherVersion a gont:MunicipalityVersion; ' +
-      'gont:admissionEvent ?versionAbolitionEvent; ' +
-      'gont:longName ?otherVersionLabel. ' +
-      '} ' +
-      '}';
-
-    let getUrl = endpointUrl+encodeURIComponent(query);
-
-    return this.http.get(getUrl, {headers: MunicipalitiesService.getHeaders()})
-      .map(
-        (response: Response) => {
-          let data = response.json().results.bindings;
-          let elements = [];
-
-          for (const e of data) {
-            elements.push({'uri': e.otherVersion.value, 'name': e.otherVersionLabel.value});
-          }
-
-          return elements;
-        }
-      );
-  }*/
 }
